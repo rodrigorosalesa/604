@@ -1,0 +1,182 @@
+## Code for downloading all files (paths/names will need to be edited, of course):
+
+"
+covid_data = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/owid-covid-data.csv")
+
+Argentina_Index = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Stock/S_P MERVAL - Argentina.csv")
+Argentina_Currency = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Currency/ARS - Argentina.csv")
+
+Australia_Index = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Stock/S_P ASX 200 - Australia.csv")
+Australia_Currency = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Currency/AUD - Australia.csv")
+
+Brazil_Index = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Stock/BOVESPA - Brazil.csv")
+Brazil_Currency = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Currency/BRL - Brazil.csv")
+
+# Edited 'Canada_Currency' and -'_Index' links to refer to edited version (with change to 'adj_close' columns)!
+Canada_Index = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Stock/S_P_TSX - Canada - S_P_TSX - Canada.csv")
+Canada_Currency = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Currency/CAD - Canada - CAD - Canada.csv")
+
+China_Index = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Stock/SZSE - China.csv")
+China_Currency = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Currency/CNY - China.csv")
+
+European_Union_Index = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Stock/EU50 - European Union.csv")
+European_Union_Currency = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Currency/EUR - European Union.csv")
+
+France_Index = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Stock/CAC 40 - France.csv")
+France_Currency = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Currency/EUR - France.csv")
+
+Germany_Index = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Stock/DAX - Germany.csv")
+Germany_Currency = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Currency/EUR - Germany.csv")
+
+Indonesia_Index = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Stock/JCI - Indonesia.csv")
+Indonesia_Currency = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Currency/IDR - Indonesia.csv")
+
+India_Index = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Stock/NIFTY 50 - India.csv")
+India_Currency = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Currency/INR - India.csv")
+
+Japan_Index = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Stock/Nikkei - Japan.csv")
+Japan_Currency = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Currency/JPY - Japan.csv")
+
+South_Korea_Index = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Stock/KS11 - South Korea.csv")
+South_Korea_Currency = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Currency/KRW - South Korea.csv")
+
+Mexico_Index = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Stock/IPC - Mexico.csv")
+Mexico_Currency = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Currency/MXN - Mexico.csv")
+
+Russia_Index = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Stock/IMOEX - Russia.csv")
+Russia_Currency = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Currency/RUB - Russia.csv")
+
+Saudi_Arabia_Index = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Stock/Tawadul - Saudi Arabia.csv")
+Saudi_Arabia_Currency = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Currency/SAR - Saudi Arabia.csv")
+
+Turkey_Index = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Stock/BIST 100 - Turkey.csv")
+Turkey_Currency = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Currency/TRY - Turkey.csv")
+
+South_Africa_Index = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Stock/S_P40 - South Africa.csv")
+South_Africa_Currency = pd.read_csv("/content/drive/MyDrive/2. School & Academics/UCalgary MDSA/Fall 2022 Project 2/Datasets/Currency/ZAR - South Africa.csv")
+"
+
+
+## Code for identifying all G20 countries, and all EU countries:
+
+"
+G20 = ('Argentina', 'Australia', 'Brazil', 'Canada', 'China', 'France', 'Germany', 'Indonesia', 'Inda', 'Japan', 'South Korea', 'Mexico', 'Russia', 'Saudi Arabia', 'South Africa', 'Turkey', 'United Kingdom', 'United States')
+
+EU = ['Austria', 'Belgium', 'Bulgaria', 'Croatia', 'Republic of Cyprus', 'Czech Republic', 'Denmark', 'Estonia', 'Finland', 'France', 'Germany', 'Greece', 'Hungary', 'Ireland', 'Italy', 'Latvia', 'Lithuania', 'Luxembourg', 'Malta', 'Netherlands', 'Poland', 'Portugal', 'Romania', 'Slovakia', 'Slovenia', 'Spain', 'Sweden']
+# EU variable shouldn't actually be necessary
+"
+
+
+
+## Query for getting all covid data (we'll have to decide what to keep) for G20 countries:
+"
+G20_covid_data = 
+SELECT
+  date,
+  iso_code,
+  continent,
+  location,
+  new_cases, 
+  new_cases_per_million, 
+  new_deaths, 
+  new_deaths_per_million, 
+  excess_mortality, 
+  icu_patients_per_million, 
+  hosp_patients_per_million,
+  weekly_icu_admissions_per_million,
+  weekly_hosp_admissions_per_million,
+  stringency_index,
+  reproduction_rate,
+  new_tests,
+  new_tests_per_thousand,
+  new_vaccinations,
+  new_vaccinations_smoothed_per_million,
+  total_boosters_per_hundred,
+  new_people_vaccinated_smoothed_per_hundred,
+  population,
+  population_density,
+  median_age,
+  gdp_per_capita,
+  extreme_poverty,
+  hospital_beds_per_thousand,
+  human_development_index
+  FROM covid_data 
+  WHERE location IN 
+    ('Argentina', 'Australia', 'Brazil', 'Canada', 'China', 'European Union', 'France', 'Germany', 'Indonesia', 'Inda', 'Japan', 'South Korea', 'Mexico', 'Russia', 'Saudi Arabia', 'South Africa', 'Turkey', 'United Kingdom', 'United States')
+"
+
+
+
+## Here is what Josh coded as well, just so this is all in one place:
+"
+%%fsql
+
+
+Turkey = 
+SELECT T1.Date,
+       T1.Close / T2.Close AS TUR_Index_to_USD
+
+FROM Turkey_Index AS T1
+
+INNER JOIN Turkey_Currency AS T2
+ON T1.Date = T2.Date
+
+-- Convert Turkey to USD
+
+
+Brazil =
+SELECT T1.Date,
+       T1.Close / T2.Close AS BRZ_Index_to_USD
+FROM Brazil_Index AS T1
+INNER JOIN Brazil_Currency AS T2
+ON T1.Date = T2.Date
+
+-- Convert BRZ_to_USD
+
+
+France =
+SELECT T1.Date,
+       T1.Close / T2.Close AS FRA_Index_to_USD
+FROM France_Index AS T1
+INNER JOIN France_Currency AS T2
+ON T1.Date = T2.Date
+
+-- Convert FRA_to_USD
+
+
+Germany =
+SELECT T1.Date,
+       T1.Close / T2.Close AS GER_Index_to_USD
+FROM Germany_Index AS T1
+INNER JOIN Germany_Currency AS T2
+ON T1.Date = T2.Date
+
+-- Convert  GER_to_USD
+
+European_Union =
+SELECT T1.Date,
+       T1.Close / T2.Close AS EU50_Index_to_USD
+FROM EU50_Index AS T1
+INNER JOIN EU50_Currency AS T2
+ON T1.Date = T2.Date
+
+-- Convert  EU50_to_USD
+
+
+SELECT Brazil.Date,
+      TUR_Index_to_USD,
+      BRZ_Index_to_USD,
+      FRA_Index_to_USD,
+      GER_Index_to_USD,
+      EU50_Index_to_USD
+FROM Brazil
+
+INNER JOIN Turkey 
+ON Brazil.Date = Turkey.Date
+INNER JOIN France
+ON Brazil.Date = France.Date
+INNER JOIN Germany
+ON Brazil.Date = Germany.Date
+INNER JOIN European_Union
+ON Brazil.Date = European_Union.Date
+"
