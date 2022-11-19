@@ -180,3 +180,101 @@ ON Brazil.Date = Germany.Date
 INNER JOIN European_Union
 ON Brazil.Date = European_Union.Date
 "
+
+
+
+-- Individual Milestone Queries
+
+-- FIRST, creating the table
+
+CREATE TABLE IF NOT EXISTS paul_croome1.covid_data (
+  iso_code VARCHAR(255) NOT NULL,
+  continent VARCHAR(255) NOT NULL,
+  location VARCHAR(255) NOT NULL,
+  `date` DATETIME NOT NULL,
+  `total_cases` DOUBLE DEFAULT NULL,
+  `new_cases` DOUBLE DEFAULT NULL,
+  `new_cases_smoothed` DOUBLE DEFAULT NULL,
+  `total_deaths` DOUBLE DEFAULT NULL,
+  `new_deaths` DOUBLE DEFAULT NULL,
+  `new_deaths_smoothed` DOUBLE DEFAULT NULL,
+  `total_cases_per_million` DOUBLE DEFAULT NULL,
+  `new_cases_per_million` DOUBLE DEFAULT NULL,
+  `new_cases_smoothed_per_million` DOUBLE DEFAULT NULL,
+  `total_deaths_per_million` DOUBLE DEFAULT NULL,
+  `new_deaths_per_million` DOUBLE DEFAULT NULL,
+  `new_deaths_smoothed_per_million` DOUBLE DEFAULT NULL,
+  `reproduction_rate` DOUBLE DEFAULT NULL,
+  `icu_patients` DOUBLE DEFAULT NULL,
+  `icu_patients_per_million` DOUBLE DEFAULT NULL,
+  `hosp_patients` DOUBLE DEFAULT NULL,
+  `hosp_patients_per_million` DOUBLE DEFAULT NULL,
+  `weekly_icu_admissions` DOUBLE DEFAULT NULL,
+  `weekly_icu_admissions_per_million` DOUBLE DEFAULT NULL,
+  `weekly_hosp_admissions` DOUBLE DEFAULT NULL,
+  `weekly_hosp_admissions_per_million` DOUBLE DEFAULT NULL,
+  `total_tests` DOUBLE DEFAULT NULL,
+  `new_tests` DOUBLE DEFAULT NULL,
+  `total_tests_per_thousand` DOUBLE DEFAULT NULL,
+  `new_tests_per_thousand` DOUBLE DEFAULT NULL,
+  `new_tests_smoothed` DOUBLE DEFAULT NULL,
+  `new_tests_smoothed_per_thousand` DOUBLE DEFAULT NULL,
+  `positive_rate` DOUBLE DEFAULT NULL,
+  `tests_per_case` DOUBLE DEFAULT NULL,
+  `tests_units` DOUBLE DEFAULT NULL,
+  `total_vaccinations` DOUBLE DEFAULT NULL,
+  `people_vaccinated` DOUBLE DEFAULT NULL,
+  `people_fully_vaccinated` DOUBLE DEFAULT NULL,
+  `total_boosters` DOUBLE DEFAULT NULL,
+  `new_vaccinations` DOUBLE DEFAULT NULL,
+  `new_vaccinations_smoothed` DOUBLE DEFAULT NULL,
+  `total_vaccinations_per_hundred` DOUBLE DEFAULT NULL,
+  `people_vaccinated_per_hundred` DOUBLE DEFAULT NULL,
+  `people_fully_vaccinated_per_hundred` DOUBLE DEFAULT NULL,
+  `total_boosters_per_hundred` DOUBLE DEFAULT NULL,
+  `new_vaccinations_smoothed_per_million` DOUBLE DEFAULT NULL,
+  `new_people_vaccinated_smoothed` DOUBLE DEFAULT NULL,
+  `new_people_vaccinated_smoothed_per_hundred` DOUBLE DEFAULT NULL,
+  `stringency_index` DOUBLE DEFAULT NULL,
+  `population_density` DOUBLE DEFAULT NULL,
+  `median_age` DOUBLE DEFAULT NULL,
+  `aged_65_older` DOUBLE DEFAULT NULL,
+  `aged_70_older` DOUBLE DEFAULT NULL,
+  `gdp_per_capita` DOUBLE DEFAULT NULL,
+  `extreme_poverty` DOUBLE DEFAULT NULL,
+  `cardiovasc_death_rate` DOUBLE DEFAULT NULL,
+  `diabetes_prevalence` DOUBLE DEFAULT NULL,
+  `female_smokers` DOUBLE DEFAULT NULL,
+  `male_smokers` DOUBLE DEFAULT NULL,
+  `handwashing_facilities` DOUBLE DEFAULT NULL,
+  `hospital_beds_per_thousand` DOUBLE DEFAULT NULL,
+  `life_expectancy` DOUBLE DEFAULT NULL,
+  `human_development_index` DOUBLE DEFAULT NULL,
+  `population` DOUBLE DEFAULT NULL,
+  `excess_mortality_cumulative_absolute` DOUBLE DEFAULT NULL,
+  `excess_mortality_cumulative` DOUBLE DEFAULT NULL,
+  `excess_mortality` DOUBLE DEFAULT NULL,
+  `excess_mortality_cumulative_per_million` DOUBLE DEFAULT NULL
+  ) ENGINE=InnoDB;
+
+
+-- SECOND, loading the data...
+load data local infile "/Users/PaulCroome/Documents/Masters (Data Science and Analytics)/Fall 2022 Project 2/owid-covid-data.csv"
+into table paul_croome1.`covid_data`
+fields terminated by ',' optionally enclosed by '"'
+lines terminated by '\n'
+ignore 1 rows;
+
+
+-- Testing:
+SELECT * FROM paul_croome1.covid_data LIMIT 10;
+
+
+-- More Testing:
+SELECT location, AVG(new_cases_per_million) 
+FROM paul_croome1.covid_data 
+WHERE `date` BETWEEN '2020-02-24' AND '2022-10-26'
+	AND population > 1000000
+GROUP BY location
+ORDER BY AVG(new_cases_per_million) DESC
+LIMIT 10;
