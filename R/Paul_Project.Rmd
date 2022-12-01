@@ -1,0 +1,108 @@
+---
+title: "Final Project"
+author: "Ann Siddiqui, Kane Smith, Paul Croome, Rodrigo Rosales Alvarez"
+date: "2022-11-29"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Final Project: COVID-19, Public Safety Measures, and Public and Fiscal Health in G20 Countries.
+
+DATA 603 (L02): Statistical Modelling with Data
+
+Authors: Paul Croome (30198881), Rodrigo Rosales Alvarez (30148393), Ann Siddiqui (30043081), and Kane Smith (30179486)
+
+Submitted to: Dr. Paul Galpern
+
+Submitted: December , 2022
+
+University of Calgary 
+
+```{r, results='hide', echo=FALSE, include=FALSE}
+# Import libraries
+library(dplyr)
+library(ggplot2)
+library(mosaic)
+library(tidyverse)
+library(resampledata)
+library(SciViews)
+library(tidyr)
+```
+
+## Introduction
+The domain of our project covers both economic and healthcare-related indicators of the wellbeing of G20 countries during the coronavirus disease 2019 (COVID-19) pandemic. In particular, we will be examining data related to the prevalence and severity of the COVID-19 pandemic, the governmental and societal measures taken to reduce the spread of the disease, and the performance of key stock market indices during the pandemic. These data were all daily reported between January 2020 and October 2022.
+
+This is an interesting and important topic of study because, in our increasingly interconnected world, contagious diseases can be transmitted over vast distances remarkably easily. Even small, remote outbreaks of diseases anywhere in the world can swiftly turn into a global pandemic, which can then cause devastation on personal, societal, and worldwide scales. 
+
+
+
+## Guiding Questions
+1.- How did COVID-19 impact the performance of the financial markets in G20 countries?
+
+1.1.- What is the relationship between the prevalence and severity of COVID-19 (i.e., new COVID-19 cases, hospitalizations, ICU admissions, and deaths) in a country and the performance of that country’s strongest stock exchange index?
+
+2.- Did government and societal healthcare actions influence the prevalence and severity of COVID-19 in G20 countries? 
+
+2.1.- Is there a correlation between vaccination, booster-shot, and policy response rates and the prevalence and severity of COVID-19 in the G20 countries?
+
+3.- Is the relationship, if any, between financial market performance and the prevalence and severity of COVID-19 moderated by the healthcare measures taken by a G20 county?
+
+
+
+## Datasets
+The first dataset we will use consists of diverse information related to the COVID-19 pandemic, including a country’s daily rates of COVID-19 diagnoses, hospitalizations, deaths, vaccinations, and booster shots. We will use features of these data to determine the prevalence and severity of the COVID-19 pandemic for each of the G20 countries on each day between January 1, 2020 and October 26, 2022. We chose to examine the G20 countries for this project because we believe this subset of countries will have reliably reported data. In addition, by focusing our investigative scope, we will be able to more deeply explore the data. This dataset is contained in a CSV file and is licensed for open access under the Creative Commons BY license.
+
+The second series of datasets we are going to use contain the market indices for the G20 countries, and are contained in CSV files. This series of open source datasets were obtained from and licensed by multiple sources such as Yahoo Finance, Tradingeconomics.com, Investing.com, and S&P Global Inc. Important information found in these datasets are the overall market performance of each index calculated daily. We plan to use these data to quantify the strength of each G20 country’s financial market, and to determine how the market performed with respect to the severity of the pandemic in each country.
+
+Lastly, the third series of datasets we will use consist of the daily exchange rates for each country’s currency, which we require in order to convert each currency into its current value of USD. Thus, we will be able to analyze the performance of each country’s market index in a uniform manner. This series of open source datasets were also obtained from and licensed by sources such as Yahoo Finance, Tradingeconomics.com, Investing.com, and S&P Global Inc. These datasets are contained in CSV files.
+
+```{r}
+# Importing COVDI-19 data set
+covid <- read_csv('g20_covid.csv', show_col_types = FALSE)
+head(covid, 5)
+```
+
+```{r}
+# Importing COVDI-19 data set
+indexes <- read_csv('UNION.csv', show_col_types = FALSE)
+head(indexes, 5)
+```
+
+### Cleaning Data sets
+
+The COVID-19 data set is clean, we did not have to do any work there; in the other hand the Stock Market Indicator has a lot of missing days as in the weekends and Holidays there is no new movement in the Stock Market and thus no new price for the stock market indicator. For this reason we are using the *fill()* function to put the last seen value in the missing spaces.
+```{r}
+indexes = indexes %>% fill(USD, .direction = 'up') 
+
+# Checking for missing values
+sapply(indexes, function(x)  sum(is.na(x)))
+```
+
+```{r}
+covid$Year <- substr(covid$date, 1, 4) 
+
+covid_2 = covid[covid$Year == 2020,]
+```
+
+
+```{r}
+covid_2 <- subset(covid_2, select = -c(iso_code, date, continent, Year) )
+covid_2[is.na(covid_2)] = 0
+
+df2 <- covid_2 %>% group_by(location) %>% 
+  summarise(across(everything(), mean),
+            .groups = 'drop')  %>%
+  as.data.frame()
+
+head(df2, 20)
+```
+```{r}
+df2 <- df %>% group_by(department,state) %>% 
+  summarise(across(c(salary, bonus),sum),
+            .groups = 'drop') %>%
+  as.data.frame()
+```
+
