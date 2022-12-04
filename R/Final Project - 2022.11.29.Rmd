@@ -61,8 +61,8 @@ Lastly, the third series of datasets we will use consist of the daily exchange r
 
 ```{r}
 # Importing COVDI-19 data set
-covid <- read_csv('g20_covid.csv', show_col_types = FALSE)
-head(covid, 5)
+covid_data <- read_csv('data.csv', show_col_types = FALSE)
+head(covid_data, 5)
 ```
 
 ```{r}
@@ -82,27 +82,56 @@ sapply(indexes, function(x)  sum(is.na(x)))
 ```
 
 ```{r}
-covid$Year <- substr(covid$date, 1, 4) 
+covid_data$Year <- substr(covid_data$date, 1, 4) 
+covid_data$Smokers <- (covid_data[['male_smokers']] + covid_data[['female_smokers']]) / 2
 
-covid_2 = covid[covid$Year == 2020,]
+covid_data_2020 = covid_data[covid_data$Year == 2020,]
 ```
 
+covid_2020 <- subset(covid_data_2020, select = -c(iso_code, date, continent, Year, handwashing_facilities, Smokers, new_cases, new_deaths, new_cases_per_million, new_deaths_per_million, weekly_icu_admissions, weekly_icu_admissions_per_million, weekly_hosp_admissions, weekly_hosp_admissions_per_million, new_tests, new_tests_per_thousand, tests_units, new_vaccinations, aged_70_older, excess_mortality_cumulative_absolute, excess_mortality) )
 
 ```{r}
-covid_2 <- subset(covid_2, select = -c(iso_code, date, continent, Year) )
-covid_2[is.na(covid_2)] = 0
+covid_2020 <- subset(covid_data_2020, select = -c(iso_code, date, continent, Year, handwashing_facilities, tests_units) )
 
-df2 <- covid_2 %>% group_by(location) %>% 
+covid_2020[is.na(covid_2020)] = 0
+
+df_2020 <- covid_2020 %>% group_by(location) %>% summarise(across(everything(), mean), .groups = 'drop') %>% as.data.frame()
+
+head(df_2020, 20)
+```
+```{r}
+covid <- subset(covid_data, select = -c(iso_code, date, continent, Year, handwashing_facilities, male_smokers, female_smokers, new_cases, new_deaths, new_cases_per_million, new_deaths_per_million, weekly_icu_admissions, weekly_icu_admissions_per_million, weekly_hosp_admissions, weekly_hosp_admissions_per_million, new_tests, new_tests_per_thousand, tests_units, new_vaccinations, aged_70_older, excess_mortality_cumulative_absolute, excess_mortality, total_cases, total_cases_per_million, total_deaths, total_deaths_per_million, new_cases_smoothed_per_million, new_cases_smoothed, new_deaths_smoothed_per_million, new_tests_smoothed_per_thousand, new_vaccinations_smoothed_per_million, new_people_vaccinated_smoothed_per_hundred, total_tests_per_thousand, total_vaccinations_per_hundred, total_boosters_per_hundred, people_vaccinated_per_hundred, total_vaccinations, excess_mortality_cumulative_per_million, hosp_patients_per_million, hospital_beds_per_thousand, icu_patients_per_million, people_fully_vaccinated_per_hundred, people_vaccinated, total_boosters, total_tests, excess_mortality_cumulative, population, Smokers) )
+
+covid[is.na(covid)] = 0
+
+df <- covid %>% group_by(location) %>% 
   summarise(across(everything(), mean),
             .groups = 'drop')  %>%
   as.data.frame()
 
-head(df2, 20)
+# head(df, 20)
+
+sort(c(colnames(df)))
 ```
+### Creating Models
+
 ```{r}
-df2 <- df %>% group_by(department,state) %>% 
-  summarise(across(c(salary, bonus),sum),
-            .groups = 'drop') %>%
-  as.data.frame()
+sort(c(colnames(df_2020)))
+```
+
+```{r}
+#df_2020 <- subset(df_2020, select = -c(location) )
+
+cases_full_model_2020 = lm(new_cases ~ aged_65_older + Smokers + cardiovasc_death_rate + diabetes_prevalence + extreme_poverty + gdp_per_capita + median_age + life_expectancy + Smokers + population + stringency_index, data=df_2020)
+
+summary(cases_full_model_2020)
+```
+
+
+### checking assumptions
+```{r}
+# Multicolinearity
+library(mctest)
+
 ```
 
