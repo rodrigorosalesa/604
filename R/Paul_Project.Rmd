@@ -30,6 +30,7 @@ library(tidyverse)
 library(resampledata)
 library(SciViews)
 library(tidyr)
+library(olsrr)
 ```
 
 ## Introduction
@@ -60,7 +61,7 @@ The second series of datasets we are going to use contain the market indices for
 Lastly, the third series of datasets we will use consist of the daily exchange rates for each country’s currency, which we require in order to convert each currency into its current value of USD. Thus, we will be able to analyze the performance of each country’s market index in a uniform manner. This series of open source datasets were also obtained from and licensed by sources such as Yahoo Finance, Tradingeconomics.com, Investing.com, and S&P Global Inc. These datasets are contained in CSV files.
 
 ```{r}
-# Importing COVDI-19 data set
+# Importing COVID-19 data set
 covid <- read_csv('g20_covid.csv', show_col_types = FALSE)
 head(covid, 5)
 ```
@@ -99,10 +100,82 @@ df2 <- covid_2 %>% group_by(location) %>%
 
 head(df2, 20)
 ```
+
+
 ```{r}
+# Model Attempt #1 - Cases
+
+# Left out 'population'; otherwise included essentially all population-based metrics!
+
+cases_mod1 = lm(new_cases~population_density+median_age+aged_65_older+aged_70_older+gdp_per_capita+extreme_poverty+cardiovasc_death_rate+diabetes_prevalence+female_smokers+male_smokers+hospital_beds_per_thousand+life_expectancy+human_development_index, data=df2)
+
+summary(cases_mod1)
+```
+
+```{r}
+# Model Attempt #2 - Deaths
+
+# Left out 'population'; otherwise included essentially all population-based metrics!
+
+deaths_mod1 = lm(new_deaths~population_density+median_age+aged_65_older+aged_70_older+gdp_per_capita+extreme_poverty+cardiovasc_death_rate+diabetes_prevalence+female_smokers+male_smokers+hospital_beds_per_thousand+life_expectancy+human_development_index, data=df2)
+
+summary(deaths_mod1)
+```
+
+
+
+
+
+
+```{r}
+# Template for making further aggregations. 
+
 df2 <- df %>% group_by(department,state) %>% 
   summarise(across(c(salary, bonus),sum),
             .groups = 'drop') %>%
   as.data.frame()
 ```
+
+
+
+
+
+
+
+## GUIDING QUESTION 2
+
+```{r}
+# Get only 2020
+covid$Year <- substr(covid$date, 1, 4) 
+
+covid_3 = covid[covid$Year == 2020,]
+
+head(covid_3)
+```
+
+```{r}
+cases_mod_Q2 = lm(new_cases_smoothed~reproduction_rate+new_tests+positive_rate+new_vaccinations_smoothed+stringency_index+new_people_vaccinated_smoothed, data=covid_3)
+
+summary(cases_mod_Q2)
+```
+
+```{r}
+deaths_mod_Q2 = lm(new_deaths_smoothed~reproduction_rate+new_tests+positive_rate+new_vaccinations_smoothed+stringency_index+new_people_vaccinated_smoothed, data=covid_3)
+
+summary(deaths_mod_Q2)
+```
+
+
+```{r}
+stepwise_mod_1 = ols_step_both_p(cases_mod_Q2, pent=0.1, prem=0.3, details=FALSE, progress=TRUE)
+```
+
+```{r}
+stepwise_mod_2 = ols_step_both_p(deaths_mod_Q2, pent=0.1, prem=0.3, details=FALSE, progress=TRUE)
+```
+
+
+
+
+
 
