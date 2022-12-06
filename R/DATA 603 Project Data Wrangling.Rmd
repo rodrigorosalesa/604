@@ -1,0 +1,43 @@
+---
+title: "DATA 603 Project Wrangling"
+output: html_document
+date: "2022-12-06"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+data <- read.csv("data.csv")
+```
+
+Getting countries with bottom 10% of new_cases_smoothed_per_million:
+
+```{r}
+tenth_percentile_cases <- quantile(data$new_cases_smoothed_per_million, probs = 0.1, na.rm = TRUE)
+bad_country_cases <- data[data$new_cases_smoothed_per_million < tenth_percentile,]
+bad_country_list_cases <- unique(bad_country_cases$location)
+```
+
+Getting countries with bottom 10% of new_deaths_smoothed_per_million:
+
+```{r}
+tenth_percentile_deaths <- quantile(data$new_deaths_smoothed_per_million, probs = 0.1, na.rm = TRUE)
+bad_country_deaths <- data[data$new_deaths_smoothed_per_million < tenth_percentile,]
+bad_country_list_deaths <- unique(bad_country_deaths$location)
+```
+
+
+Remove countries that appear in either above lists:
+
+```{r}
+bad_country_list <- append(bad_country_list_deaths, bad_country_list_cases)
+good_countries <-   data[!data$location %in% bad_country_list, ]
+```
+
+List of countries to be removed:
+```{r}
+bad_country_list
+```
+
