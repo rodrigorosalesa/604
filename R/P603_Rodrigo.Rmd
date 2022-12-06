@@ -30,8 +30,24 @@ covid_raw <- read_csv('data.csv', show_col_types = FALSE)
 ```
 
 ```{r}
+# Getting countries with bottom 5% of new_cases_smoothed_per_million
+tenth_percentile_cases <- quantile(covid_raw$new_cases_smoothed_per_million, probs = 0.05, na.rm = TRUE)
+bad_country_cases <- covid_raw[covid_raw$new_cases_smoothed_per_million < tenth_percentile_cases,]
+bad_country_list_cases <- unique(bad_country_cases$location)
+
+# Getting countries with bottom 5% of new_deaths_smoothed_per_million
+tenth_percentile_deaths <- quantile(covid_raw$new_deaths_smoothed_per_million, probs = 0.05, na.rm = TRUE)
+bad_country_deaths <- covid_raw[covid_raw$new_deaths_smoothed_per_million < tenth_percentile_deaths,]
+bad_country_list_deaths <- unique(bad_country_deaths$location)
+
+# Remove countries that appear in either above lists
+bad_country_list <- append(bad_country_list_deaths, bad_country_list_cases)
+good_countries <-   covid_raw[!covid_raw$location %in% bad_country_list, ]
+```
+
+```{r}
 # change here to use final cleaned dataset
-covid_data <- covid_raw
+covid_data <- good_countries
 covid_data$smokers <- (covid_data[['male_smokers']] + covid_data[['female_smokers']]) / 2
 
 # dropping columns
@@ -78,13 +94,13 @@ ggpairs(new_data, lower = list(continuous="smooth_loess", combo="facethist", dis
 ```
 
 ```{r}
-model_cases_squared = lm(new_cases ~ population + I(population^2)+ hosp_patients + life_expectancy + population:life_expectancy + hosp_patients:life_expectancy, data=covid_agg)
+model_cases_squared = lm(new_cases ~ population + hosp_patients + life_expectancy + I(life_expectancy^2) + population:life_expectancy + hosp_patients:life_expectancy, data=covid_agg)
 
 summary(model_cases_squared)
 ```
 
 ```{r}
-model_cases_final = lm(new_cases ~ population + hosp_patients + life_expectancy + population:life_expectancy + hosp_patients:life_expectancy, data=covid_agg)
+model_cases_final = lm(new_cases ~ population + hosp_patients + life_expectancy + I(life_expectancy^2) + population:life_expectancy + hosp_patients:life_expectancy, data=covid_agg)
 
 summary(model_cases_final)
 ```
@@ -126,12 +142,12 @@ ggpairs(new_data, lower = list(continuous="smooth_loess", combo="facethist", dis
 ```
 
 ```{r}
-model_deaths_squared = lm(new_deaths ~ population + I(population^2) + hosp_patients + life_expectancy + population:life_expectancy + hosp_patients:life_expectancy, data=covid_agg)
+model_deaths_squared = lm(new_deaths ~ population + hosp_patients + life_expectancy + I(life_expectancy^2) + population:life_expectancy + hosp_patients:life_expectancy, data=covid_agg)
 summary(model_deaths_squared)
 ```
 
 ```{r}
-model_deaths_final = lm(new_deaths ~ population + hosp_patients + life_expectancy + population:life_expectancy + hosp_patients:life_expectancy, data=covid_agg)
+model_deaths_final = lm(new_deaths ~ population + hosp_patients + life_expectancy + I(life_expectancy^2) + population:life_expectancy + hosp_patients:life_expectancy, data=covid_agg)
 summary(model_deaths_final)
 ```
 
