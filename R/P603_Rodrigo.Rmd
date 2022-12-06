@@ -1,0 +1,148 @@
+---
+title: "P603_Rodrigo"
+author: "Rodrigo Rosales"
+date: "2022-12-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, results='hide', echo=FALSE, include=FALSE}
+# Import libraries
+library(dplyr)
+library(ggplot2)
+library(mosaic)
+library(tidyverse)
+library(resampledata)
+library(SciViews)
+library(tidyr)
+library(olsrr)
+library(leaps)
+library(GGally)
+options(scipen=999)
+```
+
+```{r}
+# Importing COVDI-19 data set
+covid_raw <- read_csv('data.csv', show_col_types = FALSE)
+```
+
+```{r}
+# change here to use final cleaned dataset
+covid_data <- covid_raw
+covid_data$smokers <- (covid_data[['male_smokers']] + covid_data[['female_smokers']]) / 2
+
+# dropping columns
+covid = subset(covid_data, select = -c(iso_code, date, continent, handwashing_facilities, tests_units) )
+
+# NaN to 0
+covid[is.na(covid)] = 0
+
+# Aggregation
+covid_agg <- covid %>% group_by(location) %>% summarise(across(everything(), mean), .groups = 'drop') %>% as.data.frame()
+```
+
+
+# CASES MODEL
+```{r}
+model_cases_full = lm(new_cases ~ aged_65_older + smokers + cardiovasc_death_rate + diabetes_prevalence + extreme_poverty + gdp_per_capita + median_age + life_expectancy + population + stringency_index + human_development_index + reproduction_rate + hosp_patients + new_tests + population_density, data=covid_agg)
+
+summary(model_cases_full)
+```
+```{r}
+model_cases_stepwise = ols_step_both_p(model_cases_full, pent=0.1, prem=0.3, progress=TRUE)
+```
+```{r}
+model_cases_revised = lm(new_cases ~ population + hosp_patients + life_expectancy, data=covid_agg)
+
+summary(model_cases_revised)
+```
+
+```{r}
+model_cases_interactions = lm(new_cases ~ (population + hosp_patients + life_expectancy)^2, data=covid_agg)
+summary(model_cases_interactions)
+```
+
+```{r}
+model_cases_interactions_2 = lm(new_cases ~ population + hosp_patients + life_expectancy + population:life_expectancy + hosp_patients:life_expectancy, data=covid_agg)
+
+summary(model_cases_interactions_2)
+```
+
+```{r}
+new_data <-data.frame(covid_agg$new_cases, covid_agg$population, covid_agg$hosp_patients, covid_agg$life_expectancy)
+
+ggpairs(new_data, lower = list(continuous="smooth_loess", combo="facethist", discrete="facetbar", na="na"))
+```
+
+```{r}
+model_cases_squared = lm(new_cases ~ population + I(population^2)+ hosp_patients + life_expectancy + population:life_expectancy + hosp_patients:life_expectancy, data=covid_agg)
+
+summary(model_cases_squared)
+```
+
+```{r}
+model_cases_final = lm(new_cases ~ population + hosp_patients + life_expectancy + population:life_expectancy + hosp_patients:life_expectancy, data=covid_agg)
+
+summary(model_cases_final)
+```
+
+
+
+# MODEL DEATHS
+```{r}
+model_deaths_full = lm(new_deaths ~ aged_65_older + smokers + cardiovasc_death_rate + diabetes_prevalence + extreme_poverty + gdp_per_capita + median_age + life_expectancy + population + stringency_index + human_development_index + reproduction_rate + hosp_patients + new_tests + population_density, data=covid_agg)
+
+summary(model_deaths_full)
+```
+
+```{r}
+model_deaths_stepwise = ols_step_both_p(model_deaths_full, pent=0.1, prem=0.3, progress=TRUE)
+```
+
+```{r}
+model_deaths_revised = lm(new_deaths ~ population + hosp_patients + life_expectancy, data=covid_agg)
+
+summary(model_deaths_revised)
+```
+
+```{r}
+model_deaths_interactions = lm(new_deaths ~ (population + hosp_patients + life_expectancy)^2, data=covid_agg)
+summary(model_deaths_interactions)
+```
+
+
+```{r}
+model_deaths_interactions_2 = lm(new_deaths ~ population + hosp_patients + life_expectancy + population:life_expectancy + hosp_patients:life_expectancy, data=covid_agg)
+summary(model_deaths_interactions_2)
+```
+
+```{r}
+new_data <-data.frame(covid_agg$new_deaths, covid_agg$population, covid_agg$hosp_patients, covid_agg$life_expectancy)
+
+ggpairs(new_data, lower = list(continuous="smooth_loess", combo="facethist", discrete="facetbar", na="na"))
+```
+
+```{r}
+model_deaths_squared = lm(new_deaths ~ population + I(population^2) + hosp_patients + life_expectancy + population:life_expectancy + hosp_patients:life_expectancy, data=covid_agg)
+summary(model_deaths_squared)
+```
+
+```{r}
+model_deaths_final = lm(new_deaths ~ population + hosp_patients + life_expectancy + population:life_expectancy + hosp_patients:life_expectancy, data=covid_agg)
+summary(model_deaths_final)
+```
+
+
+
+
+
+
+
+
+
+
+
+
