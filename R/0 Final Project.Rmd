@@ -1,0 +1,72 @@
+---
+title: "Final Project: Public Safety Measures and Public Health for Covid-19"
+author: "Paul Croome, Rodrigo Rosales Alvarez, Ann Siddiqui and Kane Smith"
+date: "2022-12-14"
+output: pdf_document
+subtitle: "Data 603 - Statistical Modelling with Data"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+\begin{center}\textbf{} 
+\\Professor: Dr. Paul Galpern
+\\University of Calgary
+\\Calgary, Alberta
+\end{center}
+
+
+
+\newpage
+\tableofcontents
+
+
+
+\newpage
+# Introduction
+The domain of our project covers healthcare-related indicators of the wellbeing of countries during the coronavirus disease 2019 (COVID-19) pandemic. In particular, we will be examining data related to the prevalence and severity of the COVID-19 pandemic and the governmental and societal measures taken to reduce the spread of the disease. These data were all daily reported between January 2020 and October 2022.
+
+This is an interesting and important topic of study because, in our increasingly interconnected world, contagious diseases can be transmitted over vast distances remarkably easily. Even small, remote outbreaks of diseases anywhere in the world can swiftly turn into a global pandemic, which can then cause devastation on personal, societal, and worldwide scales. 
+
+
+## Research Questions
+1) What population-related metrics of countries around the world are most strongly related to the prevalence and severity of COVID-19 experienced in a country between February 2020 and October 2022 (as measured by average daily COVID-19 cases and deaths)? 
+
+    a) What is the best model that can be built from these data for predicting the average daily new COVID-19 cases experienced in a country? 
+    
+    b) What is the best model that can be built from these data for predicting the average daily new COVID-19 deaths experienced in a country?
+
+2) Among countries with reliably reported data relating to cases, positive test rates, vaccinations, and boosters, what societal and governmental responses to the COVID-19 pandemic are most strongly related to the prevalence and severity of COVID-19 experienced in a country between February 2020 and October 2022 (as measured by average daily COVID-19 cases and deaths)?
+
+    a) What is the best model that can be built from these daily-reported data for predicting the daily new COVID-19 cases in a country?
+    
+    b) What is the best model that can be built from these daily-reported data for predicting the daily new COVID-19 deaths in a country?
+
+
+
+\newpage
+# Data Set Definition
+
+
+
+\newpage
+# Methodology
+
+
+
+\newpage
+# Results
+
+
+
+\newpage
+# Discussion
+
+
+
+\newpage
+# References
+
+
+
