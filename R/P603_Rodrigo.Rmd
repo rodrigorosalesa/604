@@ -16,7 +16,6 @@ library(ggplot2)
 library(mosaic)
 library(tidyverse)
 library(resampledata)
-library(SciViews)
 library(tidyr)
 library(olsrr)
 library(leaps)
@@ -151,14 +150,169 @@ model_deaths_final = lm(new_deaths ~ population + hosp_patients + life_expectanc
 summary(model_deaths_final)
 ```
 
+# ASSUMPTIONS 
+
+## CASES MODEL
+
+### NORMALITY 
+
+Testing for normality using the Shapiro-Wilk test:
+
+**Null hypothesis:** the sample data are significantly normally distributed
+
+**Alternative hypothesis:** the sample data are not significantly normally distributed
+
+We will set the alpha value to 0.05.
+
+```{r}
+shapiro.test(residuals(model_cases_final))
+```
 
 
+Plotting a Q-Q plot:
+
+```{r}
+ggplot(q3_final, aes(sample=model_cases_final$residuals)) +
+stat_qq() +
+stat_qq_line()
+```
+
+From the output of our test, we get a p-value of 0.00000000000000022 which is less than 0.05. This means we can reject our null hypothesis that our sample data is significantly normally distributed and conclude with a significance level of 0.05 that our sample data is not normally distributed. This means that there is a problem with the normality assumption.
+
+### HOMOSCEDASTICITY
+
+Testing for heteroscedasticity using the Breusch-Pagan test:
+
+**Null hypothesis:** heteroscedasticity is not present ($H_0: \sigma^2_1 = \sigma^2_2 =... = \sigma^2_n$)
+
+**Alternative hypothesis:** heteroscedasticity is present ($H_a:$ at least one $\sigma^2_i$ is different from the others)
+
+We will set the alpha value to 0.05.
+
+```{r}
+bptest(model_cases_final)
+```
+
+From the output of our test, we get a p-value of 0.0000001319 which is less than 0.05. This means we can reject the null hypothesis that there is homoscedasticity and conclude with a significance level of 0.05 that our model is not homoscedastic. This means that there is a problem with the homoscedasticity assumption. 
+
+### LINEARITY 
+
+Testing for linearity using a residuals vs predicted $\hat{Y}$ plot:
+```{r}
+ggplot(model_cases_final, aes(x=.fitted, y=.resid)) +
+geom_point() + geom_smooth()+
+geom_hline(yintercept = 0)
+```
+
+Looking at the plot above, our model does seem to be linear. ??????
+
+### OUTLIERS
+
+Testing for outliers using leverage:
+```{r}
+lev=hatvalues(model_cases_final)
+p = length(coef(model_cases_final))
+n = nrow(covid_agg)
+outlier3p = lev[lev>(3*p/n)]
+outlier3p
+```
+
+```{r}
+plot(model_cases_final,which=5)
+```
+
+From our output, there seems to be two data points, row 12, 44, 64, 76, 89, 99, 101, 107, and 110 with a leverage greater than $3p/n$. 
+
+### INDEPENDANT ERRORS
+
+Plotting residuals vs. fitted values to see if the error terms look independant from each other:
+```{r}
+ggplot(model_cases_final, aes(x=.fitted, y=.resid)) +
+geom_point() + geom_smooth()+
+geom_hline(yintercept = 0)
+```
 
 
+Looking at the plot above, it seems that the residuals are evenly distributed, meaning that the residuals are independent from each other. ??????
+
+## DEATHS MODEL
+
+### NORMALITY 
+
+Testing for normality using the Shapiro-Wilk test:
+
+**Null hypothesis:** the sample data are significantly normally distributed
+
+**Alternative hypothesis:** the sample data are not significantly normally distributed
+
+We will set the alpha value to 0.05.
+
+```{r}
+shapiro.test(residuals(model_deaths_final))
+```
+
+Plotting a Q-Q plot:
+
+```{r}
+ggplot(q3_final, aes(sample=model_deaths_final$residuals)) +
+stat_qq() +
+stat_qq_line()
+```
+
+From the output of our test, we get a p-value of 0.00000000000000022 which is less than 0.05. This means we can reject our null hypothesis that our sample data is significantly normally distributed and conclude with a significance level of 0.05 that our sample data is not normally distributed. This means that there is a problem with the normality assumption.
+
+### HOMOSCEDASTICITY 
+
+Testing for heteroscedasticity using the Breusch-Pagan test:
+
+**Null hypothesis:** heteroscedasticity is not present ($H_0: \sigma^2_1 = \sigma^2_2 =... = \sigma^2_n$)
+
+**Alternative hypothesis:** heteroscedasticity is present ($H_a:$ at least one $\sigma^2_i$ is different from the others)
+
+We will set the alpha value to 0.05.
+
+```{r}
+bptest(model_deaths_final)
+```
+
+From the output of our test, we get a p-value of 0.00000000877 which is less than 0.05. This means we can reject the null hypothesis that there is homoscedasticity and conclude with a significance level of 0.05 that our model is homoscedastic. This means that there is a problem with the homoscedasticity assumption. 
+
+### LINEARITY 
+
+Testing for linearity using a residuals vs predicted $\hat{Y}$ plot:
+```{r}
+ggplot(model_deaths_final, aes(x=.fitted, y=.resid)) +
+geom_point() + geom_smooth()+
+geom_hline(yintercept = 0)
+```
+
+Looking at the plot above, our model does seem to be linear. ??????
+
+### OUTLIERS
+
+Testing for outliers using leverage:
+```{r}
+lev=hatvalues(model_deaths_final)
+p = length(coef(model_deaths_final))
+n = nrow(covid_agg)
+outlier3p = lev[lev>(3*p/n)]
+outlier3p
+```
+
+```{r}
+plot(model_deaths_final,which=5)
+```
+
+From our output, there seems to be two data points, row 12, 44, 64, 76, 89, 99, 101, 107, and 110 with a leverage greater than $3p/n$. 
+
+### INDEPENDANT ERRORS
+
+Plotting residuals vs. fitted values to see if the error terms look independant from each other:
+```{r}
+ggplot(model_deaths_final, aes(x=.fitted, y=.resid)) +
+geom_point() + geom_smooth()+
+geom_hline(yintercept = 0)
+```
 
 
-
-
-
-
-
+Looking at the plot above, it seems that the residuals are evenly distributed, meaning that the residuals are independant from each other. ????????
