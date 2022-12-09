@@ -47,12 +47,70 @@ This is an interesting and important topic of study because, in our increasingly
 
 \newpage
 # Data Set Definition
+The dataset we will use consists of diverse information related to the COVID-19 pandemic, including a country’s daily rates of COVID-19 diagnoses, hospitalizations, deaths, vaccinations, and booster shots. We will use features of these data to determine the prevalence and severity of the COVID-19 pandemic for each country . The dataset consists of daily information from January 1, 2020 to October 26, 2022 for more than 220 countries; each row corresponds to the Covid-19 information reported by an specific country in a certain date.
+
+This dataset is contained in a CSV file and is licensed for open access under the Creative Commons BY license. The data set was put together by [Our World in Data](https://ourworldindata.org/coronavirus); more important the data set is being update daily by the same organization, for more information about the data pipeline and how the data set is being maintained click [here](https://docs.owid.io/projects/covid/en/latest/data-pipeline.html#overview).  
 
 
 
 \newpage
 # Methodology
 
+## Libraries 
+```{r, results='hide', echo=FALSE, include=FALSE}
+library(dplyr) # data manipulation
+library(ggplot2) # graphs
+library(GGally) # extension to ggplot2
+library(mosaic) # statistics and calculus functions
+library(tidyverse) # data science 
+library(tidyr) # tidy data
+library(olsrr) # teaching and learning OLS regression
+library(leaps) # best subset of variables for a model
+library(mctest) # VIF
+library(car) # VIF
+library(lmtest) # Bracuh-Pagan
+library(agricolae) # Newman-Keuls
+library(MASS) # box-cox
+options(scipen=999) # show results withour cientific notation
+```
+
+## Data Import
+As our data is in CSV format, we simple use the function **read_csv()** to import our file into a data frame.
+```{r}
+covid_raw <- read_csv('data.csv', show_col_types = FALSE)
+head(covid_raw, 5)
+```
+
+## Data Cleaning 
+Many countries and facilities are under reporting Covid-19 statistics like cases and deaths, according to Claire Klobucista from Council of Foreign Relations. This is could be catastrophically as government could not respond accordingly to the real situation. For our research this is very important as well, if we put bad data into our model, we would create a bad model. To solve this problem we will remove from our dataset the bottom 5% of the countries for number of new cases smoothed per million and number of new deaths smoothed per million. 
+```{r}
+# Getting countries with bottom 5% of new_cases_smoothed_per_million
+tenth_percentile_cases <- quantile(covid_raw$new_cases_smoothed_per_million, probs = 0.05, na.rm = TRUE)
+bad_country_cases <- covid_raw[covid_raw$new_cases_smoothed_per_million < tenth_percentile_cases,]
+bad_country_list_cases <- unique(bad_country_cases$location)
+
+# Getting countries with bottom 5% of new_deaths_smoothed_per_million
+tenth_percentile_deaths <- quantile(covid_raw$new_deaths_smoothed_per_million, probs = 0.05, na.rm = TRUE)
+bad_country_deaths <- covid_raw[covid_raw$new_deaths_smoothed_per_million < tenth_percentile_deaths,]
+bad_country_list_deaths <- unique(bad_country_deaths$location)
+
+# Remove countries that appear in either above lists
+bad_country_list <- append(bad_country_list_deaths, bad_country_list_cases)
+good_countries <-   covid_raw[!covid_raw$location %in% bad_country_list, ]
+```
+
+After doing this we realized
+
+
+
+
+## Variable Definition.
+
+*Independent Variable*
+1) new_cases: new confirmed cases of COVID-19. Continuous Variable.
+2) new_deaths: new deaths attributed to COVID-19. Continuous Variable.
+
+*Dependent Variables*
 
 
 \newpage
@@ -67,6 +125,6 @@ This is an interesting and important topic of study because, in our increasingly
 
 \newpage
 # References
-
+Klobucista, Claire (2021, May 10). By How Much Are Countries Underreporting COVID-19 Cases and Deaths?. Council of Foreign Relations. https://www.cfr.org/in-brief/how-much-are-countries-underreporting-covid-19-cases-and-deaths
 
 
