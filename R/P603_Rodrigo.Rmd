@@ -177,7 +177,7 @@ shapiro.test(residuals(model_cases_final))
 Plotting a Q-Q plot:
 
 ```{r}
-ggplot(q3_final, aes(sample=model_cases_final$residuals)) +
+ggplot(model_cases_final, aes(sample=model_cases_final$residuals)) +
 stat_qq() +
 stat_qq_line()
 ```
@@ -251,6 +251,8 @@ First, we should confirm that our response variable is always positive.
 
 ```{r}
 covid_agg2[covid_agg2["new_cases"]<=0,]
+
+# New model without outliers 
 model_cases_final2 = lm(new_cases ~ population + hosp_patients + life_expectancy + I(life_expectancy^2) + population:life_expectancy + hosp_patients:life_expectancy, data=covid_agg2)
 ```
 
@@ -416,7 +418,7 @@ geom_hline(yintercept = 0)
 Looking at the plot above, it seems that the residuals are evenly distributed, meaning that the residuals are independant from each other. ????????
 
 ```{r}
-covid_agg2[covid_agg2["new_cases"]<=0,]
+covid_agg2[covid_agg2["new_cases"]<0,]
 model_deaths_final2 = lm(new_deaths ~ population + hosp_patients + life_expectancy + I(life_expectancy^2) + population:life_expectancy + hosp_patients:life_expectancy, data=covid_agg2)
 ```
 
@@ -431,6 +433,16 @@ bestlambda
 We get a lambda of -0.1010101. Conducting the Box-Cox transformation:
 
 ```{r}
-# Was getting error when running lm about having Inf in the data frame. 
-bc_model_deaths_final2 = lm((((new_deaths^(-0.1010101))-1)/-0.1010101)~ population + hosp_patients + life_expectancy + I(life_expectancy^2) + population:life_expectancy + hosp_patients:life_expectancy,data=covid_agg2)
+# Getting error when running lm about having Inf in the data frame. 
+bcmodel_deaths_final2 = lm((((new_deaths^(-0.1010101))-1)/-0.1010101)~ population + hosp_patients + life_expectancy + I(life_expectancy^2) + population:life_expectancy + hosp_patients:life_expectancy,data=covid_agg2)
+
+# There are no NAs in new_deaths or the Box-Cox transformation
+all(is.na(covid_agg2$new_deaths))
+all(is.na((((covid_agg2$new_deaths^(-0.1010101))-1)/-0.1010101)))
+
+# There are no Inf in new_deaths or the Box-Cox transformation
+all(is.infinite(covid_agg2$new_deaths))
+all(is.infinite((((covid_agg2$new_deaths^(-0.1010101))-1)/-0.1010101)))
 ```
+
+When trying to conduct a Box-Cox transformation on our new_deaths model, we encounter an error. After some testing we are not sure why this error is occuring, so we will leave the model without a Box-Cox transformation.
