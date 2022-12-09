@@ -19,7 +19,12 @@ library(resampledata)
 library(tidyr)
 library(olsrr)
 library(leaps)
+library(mctest)
+library(lmtest)
 library(GGally)
+library(agricolae)
+library(MASS)
+library(car)
 options(scipen=999)
 ```
 
@@ -223,6 +228,12 @@ plot(model_cases_final,which=5)
 
 From our output, there seems to be two data points, row 12, 44, 64, 76, 89, 99, 101, 107, and 110 with a leverage greater than $3p/n$. 
 
+Removing the rows that are influential outliers:
+```{r}
+covid_agg2 <- covid_agg[-c(12, 44, 64, 76, 89, 99, 101, 107, 110), ]
+```
+
+
 ### INDEPENDANT ERRORS
 
 Plotting residuals vs. fitted values to see if the error terms look independant from each other:
@@ -232,8 +243,94 @@ geom_point() + geom_smooth()+
 geom_hline(yintercept = 0)
 ```
 
-
 Looking at the plot above, it seems that the residuals are evenly distributed, meaning that the residuals are independent from each other. ??????
+
+Since our model failed majority of the assumptions, we will try a Box-Cox transformation to see if it improves at all.
+
+First, we should confirm that our response variable is always positive.
+
+```{r}
+covid_agg2[covid_agg2["new_cases"]<=0,]
+model_cases_final2 = lm(new_cases ~ population + hosp_patients + life_expectancy + I(life_expectancy^2) + population:life_expectancy + hosp_patients:life_expectancy, data=covid_agg2)
+```
+
+We get no rows where new cases is less than 0, so we can continue with the Box-Cox transformation.
+
+```{r}
+bc=boxcox(model_cases_final2,lambda=seq(-10,10))
+bestlambda=bc$x[which(bc$y==max(bc$y))]
+bestlambda
+```
+
+We get a lambda of 0.1010101. Conducting the Box-Cox transformation:
+
+```{r}
+bc_model_cases_final2 = lm((((new_cases^(-0.1010101))-1)/-0.1010101)~ population + hosp_patients + life_expectancy + I(life_expectancy^2) + population:life_expectancy + hosp_patients:life_expectancy,data=covid_agg2)
+```
+
+## ASSUMPTIONS FOR BOX-COX TRANSFORMED MODEL
+
+### NORMALITY 
+
+Testing for normality using the Shapiro-Wilk test:
+
+**Null hypothesis:** the sample data are significantly normally distributed
+
+**Alternative hypothesis:** the sample data are not significantly normally distributed
+
+We will set the alpha value to 0.05.
+
+```{r}
+shapiro.test(residuals(bc_model_cases_final2))
+```
+
+
+Plotting a Q-Q plot:
+
+```{r}
+ggplot(bc_model_cases_final2, aes(sample=bc_model_cases_final2$residuals)) +
+stat_qq() +
+stat_qq_line()
+```
+
+From the output of our test, we get a p-value of 0.005933 which is less than 0.05. This means we can reject our null hypothesis that our sample data is significantly normally distributed and conclude with a significance level of 0.05 that our sample data is not normally distributed. This means that there is a problem with the normality assumption.
+
+### HOMOSCEDASTICITY
+
+Testing for heteroscedasticity using the Breusch-Pagan test:
+
+**Null hypothesis:** heteroscedasticity is not present ($H_0: \sigma^2_1 = \sigma^2_2 =... = \sigma^2_n$)
+
+**Alternative hypothesis:** heteroscedasticity is present ($H_a:$ at least one $\sigma^2_i$ is different from the others)
+
+We will set the alpha value to 0.05.
+
+```{r}
+bptest(bc_model_cases_final2)
+```
+
+From the output of our test, we get a p-value of 0.01903 which is less than 0.05. This means we can reject the null hypothesis that there is homoscedasticity and conclude with a significance level of 0.05 that our model is not homoscedastic. This means that there is a problem with the homoscedasticity assumption. 
+
+### LINEARITY 
+
+Testing for linearity using a residuals vs predicted $\hat{Y}$ plot:
+```{r}
+ggplot(bc_model_cases_final2, aes(x=.fitted, y=.resid)) +
+geom_point() + geom_smooth()+
+geom_hline(yintercept = 0)
+```
+
+Looking at the plot above, our model does seem to be linear. ??????
+
+### INDEPENDANT ERRORS
+
+Plotting residuals vs. fitted values to see if the error terms look independant from each other:
+```{r}
+ggplot(bc_model_cases_final2, aes(x=.fitted, y=.resid)) +
+geom_point() + geom_smooth()+
+geom_hline(yintercept = 0)
+```
+
 
 ## DEATHS MODEL
 
@@ -254,7 +351,7 @@ shapiro.test(residuals(model_deaths_final))
 Plotting a Q-Q plot:
 
 ```{r}
-ggplot(q3_final, aes(sample=model_deaths_final$residuals)) +
+ggplot(model_deaths_final, aes(sample=model_deaths_final$residuals)) +
 stat_qq() +
 stat_qq_line()
 ```
@@ -305,6 +402,8 @@ plot(model_deaths_final,which=5)
 
 From our output, there seems to be two data points, row 12, 44, 64, 76, 89, 99, 101, 107, and 110 with a leverage greater than $3p/n$. 
 
+Since the rows that are influential outliers are the same for our cases model, we will use the same dataset with removed outliers (covid_agg2)
+
 ### INDEPENDANT ERRORS
 
 Plotting residuals vs. fitted values to see if the error terms look independant from each other:
@@ -314,5 +413,24 @@ geom_point() + geom_smooth()+
 geom_hline(yintercept = 0)
 ```
 
-
 Looking at the plot above, it seems that the residuals are evenly distributed, meaning that the residuals are independant from each other. ????????
+
+```{r}
+covid_agg2[covid_agg2["new_cases"]<=0,]
+model_deaths_final2 = lm(new_deaths ~ population + hosp_patients + life_expectancy + I(life_expectancy^2) + population:life_expectancy + hosp_patients:life_expectancy, data=covid_agg2)
+```
+
+We get no rows where new cases is less than 0, so we can continue with the Box-Cox transformation.
+
+```{r}
+bc=boxcox(model_cases_final2,lambda=seq(-10,10))
+bestlambda=bc$x[which(bc$y==max(bc$y))]
+bestlambda
+```
+
+We get a lambda of -0.1010101. Conducting the Box-Cox transformation:
+
+```{r}
+# Was getting error when running lm about having Inf in the data frame. 
+bc_model_deaths_final2 = lm((((new_deaths^(-0.1010101))-1)/-0.1010101)~ population + hosp_patients + life_expectancy + I(life_expectancy^2) + population:life_expectancy + hosp_patients:life_expectancy,data=covid_agg2)
+```
