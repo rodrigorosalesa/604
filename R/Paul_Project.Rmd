@@ -175,7 +175,7 @@ stepwise_mod_2 = ols_step_both_p(deaths_mod_Q2, pent=0.1, prem=0.3, details=FALS
 ```
 
 
-
+## Check for interactions and then higher-order terms!!
 
 
 
