@@ -74,12 +74,13 @@ library(MASS) # box-cox
 options(scipen=999) # show results withour cientific notation
 ```
 
+
 ## Data Import
 As our data is in CSV format, we simple use the function **read_csv()** to import our file into a data frame.
 ```{r}
 covid_raw <- read_csv('data.csv', show_col_types = FALSE)
-head(covid_raw, 5)
 ```
+
 
 ## Data Cleaning 
 Many countries and facilities are under reporting Covid-19 statistics like cases and deaths, according to Claire Klobucista from Council of Foreign Relations. This is could be catastrophically as government could not respond accordingly to the real situation. For our research this is very important as well, if we put bad data into our model, we would create a bad model. To solve this problem we will remove from our dataset the countries that are present in the bottom 5% of number of new cases smoothed per million and number of new deaths smoothed per million. 
@@ -97,41 +98,226 @@ bad_country_list_deaths <- unique(bad_country_deaths$location)
 # Remove countries that appear in either above lists
 bad_country_list <- append(bad_country_list_deaths, bad_country_list_cases)
 good_countries <-   covid_raw[!covid_raw$location %in% bad_country_list, ]
+
+covid_data <- good_countries
 ```
 
-After doing this we realized
+More cleaning tasks were missing, for starters we generated a new column called *smokers* that was the average of *female_smokers* and *male_smokers*, after that we replaced all the null values for 0s, as we can´t assign a number to a factor, we decided to drop continent and iso_code, columns, test_unitsand date as are not important for our analysis.
+```{r}
+# Creating the column "smokers"
+covid_data$smokers <- (covid_data[['male_smokers']] + covid_data[['female_smokers']]) / 2
 
+# Drop column continent
+covid = subset(covid_data, select = -c(iso_code, continent, tests_units, date) )
 
+# Changing Null Values to 0s
+covid[is.na(covid)] = 0
+```
 
 
 ## Variable Definition.
 
-*Independent Variable*
-1) new_cases: new confirmed cases of COVID-19. Continuous Variable.
-2) new_deaths: new deaths attributed to COVID-19. Continuous Variable.
+**Independent Variable** 
 
-*Dependent Variables*
+- _new_cases_: new confirmed cases of COVID-19. Continuous Variable.
+- _new_deaths_: new deaths attributed to COVID-19. Continuous Variable.
 
-1) Population metrics:
--extreme_poverty: The number of the population per million that is considered to be in extreme poverty.
--gdp_per_capita: GDP per capita of the country
--median_age: Median age of the population 
--population: Number of people in the country 
--human_development_index: Human development index as calculated by [Human Development Reports](https://ourworldindata.org/coronavirus)
--population_density: Population density of the country  
--aged_65_older: The number of the population per million that is aged over 65 years old
 
-2) Health metrics:
--cardiovasc_death_rate: The death rate caused by cardiovascular disease 
--diabetes_prevalence: The number of the population per million that is diagnosed with diabetes 
--life_expectancy: The life expectancy of the population of a country
--reproduction_rate: The rate of reproduction of the population of a country
--smokers: The number of the population per million that smokes cigarettes 
+**Dependent Variables**
 
-3) COVID metrics:
--stringency_index: A measure of how stringent the policies related to controlling the spread of COVID is
--hosp_patients: The number of people hospitalized due to COVID
--new_tests: The number of new COVID tests conducted in a day
+1) Population metrics
+
+    - _extreme_poverty_: The number of the population per million that is considered to be in extreme poverty.
+    - _gdp_per_capita_: GDP per capita of the country.
+    - _median_age_: Median age of the population.
+    - _population_: Number of people in the country.
+    - _human_development_index_: Human development index as calculated by [Human Development Reports](https://ourworldindata.org/coronavirus).
+    - _population_density_: Population density of the country.
+    - _aged_65_older_: The number of the population per million that is aged over 65 years old.
+    
+
+2) Health metrics
+
+    - _cardiovasc_death_rate_: The death rate caused by cardiovascular disease.
+    - _diabetes_prevalence_: The number of the population per million that is diagnosed with diabetes.
+    - _life_expectancy_: The life expectancy of the population of a country.
+    - _reproduction_rate_: The rate of reproduction of the population of a country.
+    - _smokers_: The number of the population per million that smokes cigarettes.
+    
+
+3) COVID metrics
+
+    - _stringency_index_: A measure of how stringent the policies related to controlling the spread of COVID is.
+    - _hosp_patients_: The number of people hospitalized due to COVID.
+    - _new_tests_: The number of new COVID tests conducted in a day.
+
+
+## Data Preparation 
+To create the finala dataset that will be used to create the *New Cases Model* and *New Deaths Model* we performed an aggregation function (mean) across the variable country as we are only interested in having one data point per country. The new data point will be the mean of every other variable present in the table; we decided to use the mean as that is the best way to aggregate the variables that we are interested on using like new cases, new deaths, population, stringency index and more.
+```{r}
+covid_agg <- covid %>% group_by(location) %>% summarise(across(everything(), mean), .groups = 'drop') %>% as.data.frame()
+```
+
+## Multiple Linear Regression Models for Research Question 1
+Our research question number 1 is:
+
+1) What population-related metrics of countries around the world are most strongly related to the prevalence and severity of COVID-19 experienced in a country between February 2020 and October 2022 (as measured by average daily COVID-19 cases and deaths)? 
+
+    a) What is the best model that can be built from these data for predicting the average daily new COVID-19 cases experienced in a country? 
+    
+    b) What is the best model that can be built from these data for predicting the average daily new COVID-19 deaths experienced in a country?
+    
+For this reason we are going to build two Multiple Linear Regressions Models, one for New Cases and one for New Deaths, using the tools we learnt during class.
+
+It is important to state that for all the statistical tests that we will perform trhoughout this project we will use a value of $\alpha = 0.05$.
+
+
+### New Cases Model
+
+We started by defining our full model, including all the variables that make senses to predict New Covid-19 Cases for a specific country. Using the summary() function we are able to see the most important information about our model.  
+```{r}
+model_cases_full = lm(new_cases ~ aged_65_older + smokers + cardiovasc_death_rate + diabetes_prevalence + extreme_poverty + gdp_per_capita + median_age + life_expectancy + population + stringency_index + human_development_index + reproduction_rate + hosp_patients + new_tests + population_density, data=covid_agg)
+
+summary(model_cases_full)
+```
+Using the *Step Wise Regression Procedure* to create the best fit additive model we found out that only 3 variables were significant; for these 3 terms we can reject reject the Null Hypothesis for the individual coefficient t test, meaning that the terms are significant and the coefficients should be different than 0. The 3 terms that passed the mentioned test are: **population**, **hosp_patients**, **life expectancy**.
+
+Hypothesis Testing for Individual Coefficient t tests.\
+$H_0: \beta_i = 0$\
+$H_a: \beta_i \neq 0$\
+$(i = \text{population, hosp_patients, life_expectancy})$
+```{r}
+model_cases_stepwise = ols_step_both_p(model_cases_full, pent=0.1, prem=0.3, progress=TRUE)
+```
+The model obtained after performing the *Step Wise Regression Procedure* is:\
+$\widehat{y}_{new.cases} = 14508.9677 + 0.0001 x_{population} + 1.7133 x_{hosp.patients} - 192.6691 x_{life.expectancy}$
+
+Adjusted R Squared of our model is: 0.6839, meaning that the proportion of the total variation that is explained by the model is 68.39%.
+```{r}
+model_cases_revised = lm(new_cases ~ population + hosp_patients + life_expectancy, data=covid_agg)
+summary(model_cases_revised)
+```
+
+Using interactions terms can be a powerful way to increase the efficiency of our model as sometimes the effect of an independent variable on a dependent variable, in our case new Covid-19 cases, is not constant over all of the values of the other independent variables. As population is on our terms we decided to include interactions terms as depending on the total population of a country all the other variables could change.
+
+Hypothesis Testing for Individual Coefficient t tests.\
+$H_0: \beta_i = 0$\
+$H_a: \beta_i \neq 0$\
+$(i = \text{(population, hosp_patients, life_expectancy)^2})$
+
+We failed to reject our Null Hypothesis for the interaction term *population:hosp_patients* suggesting it should not be including in our model, for all the other interaction terms we rejected the Null Hypothesis and we will conserve those terms in the model. 
+```{r}
+model_cases_interactions = lm(new_cases ~ (population + hosp_patients + life_expectancy)^2, data=covid_agg)
+summary(model_cases_interactions)
+```
+
+Here below, the interaction model.\
+$\widehat{y}_{new.cases} = 33563.8914 +0.00004 x_{population} - 5.3334 x_{hosp.patients} - 460.8215 x_{life.expectancy} + 0.0000004 x_{population} x_{life.expectancy} + 0.0905 x_{hosp.patients} x_{life.expectancy}$
+
+With the addition of the interactions terms the Adjusted R Squared of our model is now 0.7202, meaning that the proportion of the total variation that is explained by the model is 72.02%.
+```{r}
+model_cases_interactions_2 = lm(new_cases ~ population + hosp_patients + life_expectancy + population:life_expectancy + hosp_patients:life_expectancy, data=covid_agg)
+
+summary(model_cases_interactions_2)
+```
+
+We would like to try a higher order term to see if we can improve our Adjusted R Squared, as some of the relations with the dependent variable could be curvature instead of linear. To check this relations we will use the ggpairs to plot the correlation between the independent variables and the dependent variables. 
+```{r}
+covid_higher_order <-data.frame(covid_agg$new_cases, covid_agg$population, covid_agg$hosp_patients, covid_agg$life_expectancy)
+
+ggpairs(covid_higher_order, lower = list(continuous="smooth_loess", combo="facethist", discrete="facetbar", na="na"))
+```
+
+Right away we can observe that there is a curvature relationship between life_expentancy and new_cases, for that reason we decided to try a square term to see if the model behaves better. 
+
+Hypothesis Testing for Individual Coefficient t tests.\
+$H_0: \beta_i = 0$\
+$H_a: \beta_i \neq 0$\
+$(i = \text{(population, hosp_patients, life_expectancy)^2})$
+
+We rejected the Null Hypothesis for the squared term, life_expentancy, so we can include it in the model. There was an increase of 0.0068 in our Adjusted R Squared, the new value is 0.727, meaning that we can now explain more of the variation of the dependent variable.
+```{r}
+model_cases_squared = lm(new_cases ~ population + hosp_patients + life_expectancy + I(life_expectancy^2) + population:life_expectancy + hosp_patients:life_expectancy, data=covid_agg)
+
+summary(model_cases_squared)
+```
+
+As the increase in Adjusted R Squared was so little we decided to stop here and use this model as our Best Fir Model.\
+$\widehat{y}_{new.cases} = 40658.4854 + 0.00004 x_{population} - 6.0590 x_{hosp.patients} - 1338.9337 x_{life.expectancy} + 10.4609 x^2_{life.expectancy} + 0.0000005 x_{population} x_{life.expectancy} + 0.0969 x_{hosp.patients} x_{life.expectancy}$
+
+
+### New Deaths Model
+
+For the New Deaths model we followed the same procedure. We started by defining our full model, including all the variables that make senses to predict New Covid-19 Deaths for a specific country. Using the summary() function we are able to see the most important information about our model.  
+```{r}
+model_deaths_full = lm(new_deaths ~ aged_65_older + smokers + cardiovasc_death_rate + diabetes_prevalence + extreme_poverty + gdp_per_capita + median_age + life_expectancy + population + stringency_index + human_development_index + reproduction_rate + hosp_patients + new_tests + population_density, data=covid_agg)
+
+summary(model_deaths_full)
+```
+Using the *Step Wise Regression Procedure* to create the best fit additive model we found out that only 3 variables were significant; for these 3 terms we can reject reject the Null Hypothesis for the individual coefficient t test, meaning that the terms are significant and the coefficients should be different than 0. The 3 terms that passed the mentioned test are: **population**, **hosp_patients**, **life expectancy**.
+
+Hypothesis Testing for Individual Coefficient t tests.\
+$H_0: \beta_i = 0$\
+$H_a: \beta_i \neq 0$\
+$(i = \text{population, hosp_patients, life_expectancy})$
+```{r}
+model_deaths_stepwise = ols_step_both_p(model_deaths_full, pent=0.1, prem=0.3, progress=TRUE)
+```
+The model obtained after performing the *Step Wise Regression Procedure* is:\
+$\widehat{y}_{new.deaths} = 130.0567 + 0.0000007 x_{population} + 0.0168 x_{hosp.patients} - 1.7261 x_{life.expectancy}$
+
+Adjusted R Squared of our model is: 0.7582, meaning that the proportion of the total variation that is explained by the model is 75.82%.
+```{r}
+model_deaths_revised = lm(new_deaths ~ population + hosp_patients + life_expectancy, data=covid_agg)
+summary(model_deaths_revised)
+```
+Using interactions terms can be a powerful way to increase the efficiency of our model as sometimes the effect of an independent variable on a dependent variable, in our case new Covid-19 deaths, is not constant over all of the values of the other independent variables. As population is on our terms we decided to include interactions terms as depending on the total population of a country all the other variables could change.
+
+Hypothesis Testing for Individual Coefficient t tests.\
+$H_0: \beta_i = 0$\
+$H_a: \beta_i \neq 0$\
+$(i = \text{(population, hosp_patients, life_expectancy)^2})$
+
+We failed to reject our Null Hypothesis for the interaction term *population:hosp_patients* suggesting it should not be including in our model, for all the other interaction terms we rejected the Null Hypothesis and we will conserve those terms in the model. 
+```{r}
+model_deaths_interactions = lm(new_deaths ~ (population + hosp_patients + life_expectancy)^2, data=covid_agg)
+summary(model_deaths_interactions)
+```
+
+Here below, the interaction model.\
+$\widehat{y}_{new.deaths} = 323.2947 + 0.0000004 x_{population} - 0.0472 x_{hosp.patients} - 4.4463 x_{life.expectancy} + 0.000000005 x_{population} x_{life_expectancy} + 0.0008 x_{hosp.patients} x_{life.expectancy}$
+
+With the addition of the interactions terms the Adjusted R Squared of our model is now 0.7982, meaning that the proportion of the total variation that is explained by the model is 79.82%.
+```{r}
+model_deaths_interactions_2 = lm(new_deaths ~ population + hosp_patients + life_expectancy + population:life_expectancy + hosp_patients:life_expectancy, data=covid_agg)
+
+summary(model_deaths_interactions_2)
+```
+
+We would like to try a higher order term to see if we can improve our Adjusted R Squared, as some of the relations with the dependent variable could be curvature instead of linear. To check this relations we will use the ggpairs to plot the correlation between the independent variables and the dependent variables. 
+```{r}
+covid_higher_order <-data.frame(covid_agg$new_deaths, covid_agg$population, covid_agg$hosp_patients, covid_agg$life_expectancy)
+
+ggpairs(covid_higher_order, lower = list(continuous="smooth_loess", combo="facethist", discrete="facetbar", na="na"))
+```
+
+Right away we can observe that there is a curvature relationship between life_expentancy and new_deaths, for that reason we decided to try a square term to see if the model behaves better. 
+
+Hypothesis Testing for Individual Coefficient t tests.\
+$H_0: \beta_i = 0$\
+$H_a: \beta_i \neq 0$\
+$(i = \text{(population, hosp_patients, life_expectancy)^2})$
+
+We rejected the Null Hypothesis for the squared term, life_expentancy, so we can include it in the model. There was an increase of 0.0043 in our Adjusted R Squared, the new value is 0.8025, meaning that we can now explain more of the variation of the dependent variable.
+```{r}
+model_deaths_squared = lm(new_deaths ~ population + hosp_patients + life_expectancy + I(life_expectancy^2) + population:life_expectancy + hosp_patients:life_expectancy, data=covid_agg)
+
+summary(model_deaths_squared)
+```
+
+As the increase in Adjusted R Squared was so little we decided to stop here and use this model as our Best Fit Model.\
+$\widehat{y}_{new.deaths} = 379.8272 + 0.0000004 x_{population} - 0.0530 x_{hosp.patients} - 11.4435 x_{life.expectancy} + 0.0834 x^2_{life.expectancy} + 0.000000005 x_{population} x_{life.expectancy} + 0.00087 x_{hosp.patients} x_{life.expectancy}$
+
 
 
 \newpage
