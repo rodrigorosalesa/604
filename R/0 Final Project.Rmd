@@ -123,19 +123,47 @@ options(scipen=999) # show results without scientific notation
 ## Data Import
 As our data is in CSV format, we simple use the function **read_csv()** to import our file into a data frame.
 ```{r}
-covid_data <- read_csv('data.csv', show_col_types = FALSE)
+covid_raw <- read_csv('data.csv', show_col_types = FALSE)
 ```
 
 
 ## Data Cleaning 
 Our data set present countries and zones that are the aggregation of multiple countries, for example Europe that is the aggregation of all countries in Europe, as we are building a model that will try to predict cases and deaths for a country, we need to remove the aggregations to not cause noise in our results. 
+
+Many countries and facilities are under reporting Covid-19 statistics like cases and deaths, according to Claire Klobucista from Council of Foreign Relations. This is could be catastrophically as government could not respond accordingly to the real situation. For our research this is very important as well, if we put bad data into our model, we would create a bad model. To solve this problem we will remove from our dataset the countries that are present in the bottom 5% of number of new cases smoothed per million and number of new deaths smoothed per million. 
 ```{r}
 # Removing locations from the data set that are aggregates of countries
-not_countries <- c("Europe", "European Union", "High Income", "International", "Africa", "Asia", "Low Income", "Lower Middle Income", "North America", "Oceania", "South America", "Upper Middle Income", "World")
-covid_data <- covid_data[!covid_data$location %in% not_countries, ]
+not_countries <- c("Europe", "European Union", "High income", "International", "Africa", "Asia", "Low income", "Lower middle income", "North America", "Oceania", "South America", "Upper middle income", "World")
+
+# Calculating the lowest fifth percentile of average daily cases per million (smoothed over 7 days), 
+# and then identifying the countries with less than the identified value
+avg_daily_cases_per_million = aggregate(new_cases_smoothed_per_million ~ location, data=covid_raw, FUN=mean)
+
+p5_cases = quantile(avg_daily_cases_per_million$new_cases_smoothed_per_million, probs = 0.05)
+
+low_countries_cases = avg_daily_cases_per_million$location[avg_daily_cases_per_million$new_cases_smoothed_per_million < p5_cases]
+
+# Calculating the lowest fifth percentile of average daily deaths per million (smoothed over 7 days), 
+# and then identifying the countries with less than the identified value
+avg_daily_deaths_per_million = aggregate(new_deaths_smoothed_per_million ~ location, data=covid_raw, FUN=mean)
+
+p5_deaths = quantile(avg_daily_deaths_per_million$new_deaths_smoothed_per_million, probs = 0.05)
+
+low_countries_deaths = avg_daily_deaths_per_million$location[avg_daily_deaths_per_million$new_deaths_smoothed_per_million < p5_deaths]
+
+# Appending the identified low-rate countries (and the non-countries in the dataset) into a single list
+low_country_list1 <- append(low_countries_cases, low_countries_deaths)
+
+low_country_list <- append(not_countries, low_country_list1)
+
+# Creating a list with only the unique countries
+unique_low_country_list = unique(low_country_list)
+
+# Removing the identified countries in the unique list from the dataset
+covid_data <- covid_raw[!covid_raw$location %in% unique_low_country_list, ]
 ```
 
-More cleaning tasks were missing, for starters we generated a new column called *smokers* that was the average of *female_smokers* and *male_smokers*, after that we replaced all the null values for 0s, as we can´t assign a number to a factor, we decided to drop continent, iso_code, test_unitsand and date as are not important for our analysis.
+More cleaning tasks were missing, for starters we generated a new column called *smokers* that was the average of *female_smokers* and *male_smokers*, after that we replaced all the null values with the last seen value, because as we will perform an aggregation we can´t have null values as it will turn everything into Null.
 ```{r}
 # Creating the column "smokers"
 covid_data$smokers <- (covid_data[['male_smokers']] + covid_data[['female_smokers']]) / 2
@@ -143,7 +171,8 @@ covid_data$smokers <- (covid_data[['male_smokers']] + covid_data[['female_smoker
 # Drop column continent
 covid = subset(covid_data, select = -c(iso_code, continent, tests_units, date) )
 
-# Changing Null Values to 0s
+# Filling missing values 
+covid = covid %>% fill(colnames(covid), .direction = "down")
 covid[is.na(covid)] = 0
 ```
 
@@ -187,34 +216,8 @@ covid[is.na(covid)] = 0
 
 ## Data Preparation 
 To create the final dataset that will be used to create the *New Cases Model* and *New Deaths Model* we performed an aggregation function (mean) across the variable country as we are only interested in having one data point per country. The new data point will be the mean of every other variable present in the table; we decided to use the mean as that is the best way to aggregate the variables that we are interested on using like new cases, new deaths, population, stringency index and more.
-
-Many countries and facilities are under reporting Covid-19 statistics like cases and deaths, according to Claire Klobucista from Council of Foreign Relations. This is could be catastrophically as government could not respond accordingly to the real situation. For our research this is very important as well, if we put bad data into our model, we would create a bad model. To solve this problem we will remove from our dataset the countries that are present in the bottom 5% of number of new cases smoothed per million and number of new deaths smoothed per million. 
 ```{r}
 covid_agg <- covid %>% group_by(location) %>% summarise(across(everything(), mean), .groups = 'drop') %>% as.data.frame()
-
-# Removing countries with 0 covid cases or deaths 
-zero_country_deaths <- covid_agg[covid_agg$new_deaths_smoothed_per_million == 0 ,]
-zero_country_cases <- covid_agg[covid_agg$new_cases_smoothed_per_million ==0 ,]
-
-zero_country_cases_list <- unique(zero_country_cases$location)
-zero_country_deaths_list <- unique(zero_country_deaths$location)
-
-zero_country_case_deaths <- append(zero_country_cases_list, zero_country_deaths_list)
-covid_agg <- covid_agg[!covid_agg$location %in% zero_country_case_deaths, ]
-
-# Getting countries with bottom 5% of new_cases_smoothed_per_million
-fifth_percentile_cases <- quantile(covid_agg$new_cases_smoothed_per_million, probs = 0.05, na.rm = TRUE)
-bad_country_cases <- covid_agg[covid_agg$new_cases_smoothed_per_million < fifth_percentile_cases,]
-bad_country_list_cases <- unique(bad_country_cases$location)
-
-# Getting countries with bottom 5% of new_deaths_smoothed_per_million
-fifth_percentile_deaths <- quantile(covid_agg$new_deaths_smoothed_per_million, probs = 0.05, na.rm = TRUE)
-bad_country_deaths <- covid_agg[covid_agg$new_deaths_smoothed_per_million < fifth_percentile_deaths,]
-bad_country_list_deaths <- unique(bad_country_deaths$location)
-
-# Remove countries that appear in either above lists
-bad_country_list <- append(bad_country_list_deaths, bad_country_list_cases)
-covid_agg <-   covid_agg[!covid_agg$location %in% bad_country_list, ]
 ```
 
 
@@ -232,7 +235,7 @@ Our research question number 1 is:
     
 For this reason we are going to build two Multiple Linear Regressions Models, one for New Cases and one for New Deaths, using the tools we learnt during class.
 
-It is important to state that for all the statistical tests that we will perform trhoughout this project we will use a value of $\alpha = 0.05$.
+It is important to state that for all the statistical tests that we will perform throughout this project we will use a value of $\alpha = 0.05$.
 
 
 ### New Cases Model
@@ -259,7 +262,6 @@ The model obtained after performing the *Step Wise Regression Procedure* is:\
 $\widehat{y}_{new.cases} = 59518.694  + 0.00003476 x_{population} + 1.8174 x_{hosp.patients} - 758.1411 x_{life.expectancy} -26.7645 x_{cardiovasc.death.rate} + 506.2606 x_{aged.65.older}$
 
 Adjusted R Squared of our model is: 0.4331, meaning that the proportion of the total variation that is explained by the model is 43.31%.
-
 ```{r}
 model_cases_revised = lm(new_cases ~ population + hosp_patients + life_expectancy + cardiovasc_death_rate + aged_65_older, data=covid_agg)
 summary(model_cases_revised)
@@ -308,7 +310,6 @@ $H_a: \beta_i \neq 0$\
 $(i = \text{population^2})$
 
 We rejected the Null Hypothesis for the squared term, population, so we can include it in the model. There was an increase of 0.1272 in our Adjusted R Squared, the new value is 0.5603, meaning that we can now explain more of the variation of the dependent variable.
-
 ```{r}
 model_cases_squared = lm(new_cases ~ population + I(population^2) + hosp_patients + life_expectancy + cardiovasc_death_rate + aged_65_older, data=covid_agg)
 
@@ -335,7 +336,6 @@ shapiro.test(residuals(model_cases_squared))
 ```
 
 Plotting a Q-Q plot:
-
 ```{r}
 ggplot(model_cases_squared, aes(sample=model_cases_squared$residuals)) + stat_qq(color='blue') + stat_qq_line(color='red') + ggtitle('Q-Q plot: Checking Normality Assumption for New Cases Model')
 ```
@@ -385,7 +385,6 @@ plot(model_cases_squared, which=5)
 ```
 
 From our output, we have influential outliers in our data at rows 72, 90, 95, 110, 121, 122, 225 and 227. Removing these rows:
-
 ```{r}
 covid_agg2 <- covid_agg[-c(72,90,95,110,121,122,225,227),]
 ```
@@ -417,7 +416,6 @@ $\widehat{y}_{new.cases} = 75423.6599 + 0.0001757 x_{population} - 0.00000000000
 ### New Deaths Model
 
 For the New Deaths model we followed the same procedure. We started by defining our full model, including all the variables that make senses to predict New Covid-19 Deaths for a specific country. Using the **summary()** function we are able to see the most important information about our model.
-
 ```{r}
 model_deaths_full = lm(new_deaths ~ aged_65_older + smokers + cardiovasc_death_rate + diabetes_prevalence + extreme_poverty + gdp_per_capita + median_age + life_expectancy + population + stringency_index + human_development_index + reproduction_rate + hosp_patients + new_tests + population_density, data=covid_agg)
 
@@ -465,7 +463,6 @@ $H_a: \beta_i \neq 0$\
 $(i = \text{(population, hosp_patients, life_expectancy, extreme_povery)^2})$
 
 We failed to reject our Null Hypothesis for all of the every interaction term, but 2, suggesting they should not be included in our model. For **population:life_expectancy** and **population:extreme_poverty** we rejected our Null Hyphothesis and will be included in the model
-
 ```{r}
 model_deaths_interactions = lm(new_deaths ~ (population + hosp_patients + life_expectancy + extreme_poverty)^2, data=covid_agg)
 summary(model_deaths_interactions)
@@ -479,7 +476,6 @@ summary(model_deaths_interactions_2)
 
 
 We would like to try a higher order term to see if we can improve our Adjusted R Squared, as some of the relations with the dependent variable could be curvature instead of linear. To check this relations we will use the ggpairs to plot the correlation between the independent variables and the dependent variables. 
-
 ```{r}
 covid_higher_order <- data.frame(covid_agg$new_deaths, covid_agg$population, covid_agg$hosp_patients, covid_agg$life_expectancy, covid_agg$extreme_poverty )
 
@@ -494,7 +490,6 @@ $H_a: \beta_i \neq 0$\
 $(i = \text{population^2})$
 
 We rejected the Null Hypothesis for the squared term, population, so we can include it in the model. There was an increase of 0.164 in our Adjusted R Squared, the new value is 0.8376, meaning that we can now explain more of the variation of the dependent variable. We decided to stop here as we don´t want to to create a model that is overfited. 
-
 ```{r}
 model_deaths_squared = lm(new_deaths ~ population + I(population^2) + hosp_patients + life_expectancy + extreme_poverty + population:life_expectancy + population:extreme_poverty, data=covid_agg)
 
