@@ -123,36 +123,19 @@ options(scipen=999) # show results without scientific notation
 ## Data Import
 As our data is in CSV format, we simple use the function **read_csv()** to import our file into a data frame.
 ```{r}
-covid_raw <- read_csv('data.csv', show_col_types = FALSE)
+covid_data <- read_csv('data.csv', show_col_types = FALSE)
 ```
 
 
 ## Data Cleaning 
-Many countries and facilities are under reporting Covid-19 statistics like cases and deaths, according to Claire Klobucista from Council of Foreign Relations. This is could be catastrophically as government could not respond accordingly to the real situation. For our research this is very important as well, if we put bad data into our model, we would create a bad model. To solve this problem we will remove from our dataset the countries that are present in the bottom 5% of number of new cases smoothed per million and number of new deaths smoothed per million. 
-
+Our data set present countries and zones that are the aggregation of multiple countries, for example Europe that is the aggregation of all countries in Europe, as we are building a model that will try to predict cases and deaths for a country, we need to remove the aggregations to not cause noice in our results. 
 ```{r}
 # Removing locations from the data set that are aggregates of countries
 not_countries <- c("Europe", "European Union", "High Income", "International", "Africa", "Asia", "Low Income", "Lower Middle Income", "North America", "Oceania", "South America", "Upper Middle Income", "World")
-covid_raw <- covid_raw[!covid_raw$location %in% not_countries, ]
-
-# Getting countries with bottom 5% of new_cases_smoothed_per_million
-#tenth_percentile_cases <- quantile(covid_raw2$new_cases_smoothed_per_million, probs = 0.05, na.rm = TRUE)
-#bad_country_cases <- covid_raw2[covid_raw2$new_cases_smoothed_per_million < tenth_percentile_cases,]
-#bad_country_list_cases <- unique(bad_country_cases$location)
-
-# Getting countries with bottom 5% of new_deaths_smoothed_per_million
-#tenth_percentile_deaths <- quantile(covid_raw2$new_deaths_smoothed_per_million, probs = 0.05, na.rm = TRUE)
-#bad_country_deaths <- covid_raw2[covid_raw2$new_deaths_smoothed_per_million < tenth_percentile_deaths,]
-#bad_country_list_deaths <- unique(bad_country_deaths$location)
-
-# Remove countries that appear in either above lists
-#bad_country_list <- append(bad_country_list_deaths, bad_country_list_cases)
-#good_countries <-   covid_raw2[!covid_raw2$location %in% bad_country_list, ]
-#covid_data <- good_countries
-covid_data <- covid_raw
+covid_data <- covid_data[!covid_data$location %in% not_countries, ]
 ```
 
-More cleaning tasks were missing, for starters we generated a new column called *smokers* that was the average of *female_smokers* and *male_smokers*, after that we replaced all the null values for 0s, as we can´t assign a number to a factor, we decided to drop continent and iso_code, columns, test_unitsand date as are not important for our analysis.
+More cleaning tasks were missing, for starters we generated a new column called *smokers* that was the average of *female_smokers* and *male_smokers*, after that we replaced all the null values for 0s, as we can´t assign a number to a factor, we decided to drop continent, iso_code, test_unitsand and date as are not important for our analysis.
 ```{r}
 # Creating the column "smokers"
 covid_data$smokers <- (covid_data[['male_smokers']] + covid_data[['female_smokers']]) / 2
@@ -204,6 +187,8 @@ covid[is.na(covid)] = 0
 
 ## Data Preparation 
 To create the final dataset that will be used to create the *New Cases Model* and *New Deaths Model* we performed an aggregation function (mean) across the variable country as we are only interested in having one data point per country. The new data point will be the mean of every other variable present in the table; we decided to use the mean as that is the best way to aggregate the variables that we are interested on using like new cases, new deaths, population, stringency index and more.
+
+Many countries and facilities are under reporting Covid-19 statistics like cases and deaths, according to Claire Klobucista from Council of Foreign Relations. This is could be catastrophically as government could not respond accordingly to the real situation. For our research this is very important as well, if we put bad data into our model, we would create a bad model. To solve this problem we will remove from our dataset the countries that are present in the bottom 5% of number of new cases smoothed per million and number of new deaths smoothed per million. 
 ```{r}
 covid_agg <- covid %>% group_by(location) %>% summarise(across(everything(), mean), .groups = 'drop') %>% as.data.frame()
 
