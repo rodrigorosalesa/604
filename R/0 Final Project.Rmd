@@ -596,6 +596,7 @@ This model gives us an adjusted R-squared value of 0.9594. Which means out model
 
 ## Multiple Linear Regression Models for Research Question 2
 
+
 The second guiding question for this project is:  
 
 Among countries with reliably reported data relating to cases, positive test rates, vaccinations, and boosters, what societal and governmental responses to the COVID-19 pandemic are most strongly related to the prevalence and severity of COVID-19 experienced in a country between February 2020 and October 2022 (as measured by average daily COVID-19 cases and deaths)?
@@ -693,7 +694,7 @@ gq2_cases_intermod_reduced = lm(new_cases_smoothed ~ reproduction_rate + new_tes
                       reproduction_rate:new_people_vaccinated_smoothed + 
                       reproduction_rate:stringency_index + reproduction_rate:hosp_patients + 
                       new_tests_smoothed:positive_rate + new_tests_smoothed:new_vaccinations_smoothed + 
-                      new_tests_smoothed:new_people_vaccinated_smoothed + new_tests_smoothed:stringency_index + 
+                      new_tests_smoothed:new_people_vaccinated_smoothed + new_tests_smoothed:stringency_index +
                       new_tests_smoothed:hosp_patients + positive_rate:new_vaccinations_smoothed + 
                       positive_rate:new_people_vaccinated_smoothed + positive_rate:hosp_patients + 
                       new_vaccinations_smoothed:new_people_vaccinated_smoothed + 
@@ -722,6 +723,11 @@ $\widehat{New Cases} = -956.9219 - 177.4731 X_{reproduction.rate} + 0.0103 X_{ne
 
 
 ### New Cases Model Assumptions 
+
+
+
+
+
 
 
 
@@ -804,7 +810,7 @@ gq2_deaths_intermod_reduced = lm(new_deaths_smoothed ~ reproduction_rate + new_t
                       positive_rate:new_people_vaccinated_smoothed + positive_rate:stringency_index + 
                       positive_rate:icu_patients + 
                       new_vaccinations_smoothed:new_people_vaccinated_smoothed + 
-                      new_vaccinations_smoothed:stringency_index + new_vaccinations_smoothed:hosp_patients + 
+                      new_vaccinations_smoothed:stringency_index + new_vaccinations_smoothed:icu_patients + 
                       new_people_vaccinated_smoothed:stringency_index + 
                       new_people_vaccinated_smoothed:icu_patients + stringency_index:icu_patients
                       , data = covid_data)
@@ -812,33 +818,11 @@ gq2_deaths_intermod_reduced = lm(new_deaths_smoothed ~ reproduction_rate + new_t
 summary(gq2_deaths_intermod_reduced)
 ```
 
-Now, p-value > $\alpha$ for the interaction terms reproduction_rate:stringency_index and new_tests_smoothed:positive_rate; therefore, we fail to reject the null hypothesis for these terms and infer that their coefficients are not different from 0, at a 5% significance level. For all other interaction terms, p-value < $\alpha$. Thus, all other interaction terms will be included in the model going forward.  
-
-```{r}
-gq2_deaths_intermod_reduced2 = lm(new_deaths_smoothed ~ reproduction_rate + new_tests_smoothed + 
-                      positive_rate + new_vaccinations_smoothed + new_people_vaccinated_smoothed +
-                      stringency_index + icu_patients + reproduction_rate:new_tests_smoothed + 
-                      reproduction_rate:new_vaccinations_smoothed + 
-                      reproduction_rate:new_people_vaccinated_smoothed + + reproduction_rate:icu_patients  + 
-                      new_tests_smoothed:new_vaccinations_smoothed + 
-                      new_tests_smoothed:new_people_vaccinated_smoothed + new_tests_smoothed:stringency_index +
-                      new_tests_smoothed:icu_patients + 
-                      positive_rate:new_people_vaccinated_smoothed + positive_rate:stringency_index + 
-                      positive_rate:icu_patients + 
-                      new_vaccinations_smoothed:new_people_vaccinated_smoothed + 
-                      new_vaccinations_smoothed:stringency_index + new_vaccinations_smoothed:hosp_patients + 
-                      new_people_vaccinated_smoothed:stringency_index + 
-                      new_people_vaccinated_smoothed:icu_patients + stringency_index:icu_patients
-                      , data = covid_data)
-
-summary(gq2_deaths_intermod_reduced2)
-```
-
 Finally, p-value < $\alpha$ for all interaction terms; therefore, we reject the nul hypothesis for all of these terms and infer at the 5% significance level that their coefficients are not equal to zero. In other words, all of the terms in the model created above should be included in the model going forward.  
 
-At this stage, the model has an RMSE of ... (far lower than the RMSE of ... when only main effects were included) and an $R^2_{adj}$ of ... (far higher than the additive model's $R^2_{adj}$ of ...).  
+At this stage, the model has an RMSE of 85.25 (far lower than the RMSE of 115.1 when only main effects were included) and an $R^2_{adj}$ of 0.9197 (far higher than the additive model's $R^2_{adj}$ of 0.8537).  
 
-Next, we attempted to check whether any higher-order terms were warranted in the model by checking pairwise plots of the dependent variable with each of the independent variables and determining whether any of the relationships were curvilinear in nature. However, the following R-code caused out R studio applications to crash every time that it was run.  
+Next, we attempted to check whether any higher-order terms were warranted in the model by checking pairwise plots of the dependent variable with each of the independent variables and determining whether any of the relationships were curvilinear in nature. However, the following R-code caused our R studio applications to crash every time that it was run.  
 
 ```{r}
 # THIS (graph) CAUSES R TO CRASH
@@ -847,9 +831,9 @@ Next, we attempted to check whether any higher-order terms were warranted in the
 #ggpairs(covid_data_pairs, lower = list(continuous="smooth_loess", combo="facethist", discrete="facetbar", na="na"))
 ```
 
-Because the above code would not run and because the $R^2_{adj}$ in the interactive model is already a remarkably high ..., we determined that adding additional high-order terms would be unnecessary. Therefore, the final model for new deaths (i.e., daily deaths) that we fitted from countries' daily-reported COVID-19-related data is the following: 
+Because the above code would not run and because the $R^2_{adj}$ in the interactive model is already a remarkably high 0.9197, we determined that adding additional high-order terms would be unnecessary. Therefore, the final model for new deaths (i.e., daily deaths) that we fitted from countries' daily-reported COVID-19-related data is the following: 
 
-$\widehat{New Deaths} = $ (populate after country cleaning)
+$\widehat{New Deaths} = 58.4964 - 35.3352 X_{reproduction.rate} + 0.0004054 X_{new.tests.smoothed} - 100.6623 X_{positive.rate} - 0.000004938 X_{new.vaccinations.smoothed} - 0.001109 X_{new.people.vaccinated.smoothed} - 0.8754 X_{stringency.index} + 0.1136 X_{icu.patients} - 0.0002561 X_{reproduction.rate:new.tests.smoothed} + 0.0005209 X_{reproduction.rate:new.vaccinations.smoothed} - 0.0006226 X_{reproduction.rate:new.people.vaccinated.smoothed} + 0.4797 X_{reproduction.rate:new.people.vaccinated.smoothed} - 0.09270 X_{reproduction.rate:icu.patients} + 0.0007177 X_{new.tests.smoothed:positive.rate} - 0.00000000006414 X_{new.tests.smoothed:new.vaccinations.smoothed} + 0.0000000008364 X_{new.tests.smoothed:new.people.vaccinated.smoothed} - 0.000001561 X_{new.tests.smoothed:stringency.index} + 0.000000008622 X_{new.tests.smoothed:icu.patients} + 0.003121 X_{positive.rate:new.people.vaccinated.smoothed} + 3.0156 X_{positive.rate:stringency.index} - 0.1275 X_{positive.rate:icu.patients} - 0.0000000001269 x_{new.vaccinations.smoothed:new.people.vaccinated.smoothed} - 0.00001073 X_{new.vaccinations.smoothed:stringency.index} + 0.00000001979 X_{new.vaccinations.smoothed:icu.patients} + 0.00002719 X_{new.people.vaccinated.smoothed:stringency.index} - 0.00000005890 X_{new.people.vaccinated.smoothed:icu.patients} + 0.0008637 X_{stringency.index:icu.patients}$  
 
 
 
