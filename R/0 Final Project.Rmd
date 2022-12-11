@@ -100,7 +100,7 @@ To answer the questions outlined in our introduction, we will be creating variou
 
 The above tasks were divided among the team in the following way: The preparation, including importing libraries, importing the data, cleaning the data, defining variables to be used in analysis, and wrangling the data, was all distributed evenly among the four team members. Analysis of Question 1 was divided between Rodrigo and Kane; this includes building the MLR models, checking the assumptions, doing any transformations and interpreting the results. Analysis of Question 2 was divided between Paul and Ann which also included building the MLR models, checking the assumptions, doing any transformations and interpreting the results.
 
-# Preparation 
+
 ## Libraries 
 ```{r, results='hide', echo=FALSE, include=FALSE}
 library(dplyr) # data manipulation
@@ -128,7 +128,7 @@ covid_data <- read_csv('data.csv', show_col_types = FALSE)
 
 
 ## Data Cleaning 
-Our data set present countries and zones that are the aggregation of multiple countries, for example Europe that is the aggregation of all countries in Europe, as we are building a model that will try to predict cases and deaths for a country, we need to remove the aggregations to not cause noice in our results. 
+Our data set present countries and zones that are the aggregation of multiple countries, for example Europe that is the aggregation of all countries in Europe, as we are building a model that will try to predict cases and deaths for a country, we need to remove the aggregations to not cause noise in our results. 
 ```{r}
 # Removing locations from the data set that are aggregates of countries
 not_countries <- c("Europe", "European Union", "High Income", "International", "Africa", "Asia", "Low Income", "Lower Middle Income", "North America", "Oceania", "South America", "Upper Middle Income", "World")
@@ -217,7 +217,9 @@ bad_country_list <- append(bad_country_list_deaths, bad_country_list_cases)
 covid_agg <-   covid_agg[!covid_agg$location %in% bad_country_list, ]
 ```
 
-#Analysis
+
+
+## Analysis
 
 ## Multiple Linear Regression Models for Research Question 1
 Our research question number 1 is:
@@ -234,29 +236,28 @@ It is important to state that for all the statistical tests that we will perform
 
 ### New Cases Model
 
-We started by defining our full model, including all the variables that make senses to predict New Covid-19 Cases for a specific country. Using the summary() function we are able to see the most important information about our model. 
-
+We started by defining our full model, including all the variables that make senses to predict New Covid-19 Cases for a specific country. Using the **summary()** function we are able to see the most important information about our model. 
 ```{r}
 model_cases_full = lm(new_cases ~ aged_65_older + smokers + cardiovasc_death_rate + diabetes_prevalence + extreme_poverty + gdp_per_capita + median_age + life_expectancy + population + stringency_index + human_development_index + reproduction_rate + hosp_patients + new_tests + population_density, data=covid_agg)
 
 summary(model_cases_full)
 ```
 
-Using the *Step Wise Regression Procedure* to create the best fit additive model we found out that only 3 variables were significant; for these 3 terms we can reject reject the Null Hypothesis for the individual coefficient t test, meaning that the terms are significant and the coefficients should be different than 0. The 3 terms that passed the mentioned test are: **population **, **new_tests**, **hosp_patients**, **cardiovasc_death_rate **, **life_expectancy **, **aged_65_older**, **extreme_poverty**, **gdp_per_capita**, **median_age**, **smokers** .
+Using the *Step Wise Regression Procedure* to create the best fit additive model we found out that only 3 variables were significant; for these 3 terms we can reject reject the Null Hypothesis for the individual coefficient t test, meaning that the terms are significant and the coefficients should be different than 0. The 5 terms that passed the mentioned test are: **population **, **hosp_patients**, **life_expectancy **, **cardiovasc_death_rate**, **aged_65_older**.
 
 Hypothesis Testing for Individual Coefficient t tests.\
 $H_0: \beta_i = 0$\
 $H_a: \beta_i \neq 0$\
-$(i = \text{population, hosp_patients, life_expectancy})$
+$(i = \text{population, hosp_patients, life_expectancy, cardiovasc_death_rate, aged_65_older})$
 
 ```{r}
 model_cases_stepwise = ols_step_both_p(model_cases_full, pent=0.1, prem=0.3, progress=TRUE)
 ```
 
 The model obtained after performing the *Step Wise Regression Procedure* is:\
-$\widehat{y}_{new.cases} = 130881.628  - 0.24490991 x_{new_tests} + 0.24490991 x_{population} +4.6709x_{hosp.patients} + 1397.858 x_{aged.65.older}- 54.705     x_{cardiovasc.death.rate}- 1642.655 x_{life.expectancy} -371.30791551x_{extreme.poverty}+ 0.20325820 x_{gdp.per.capita}- 468.88355355x_{meidan.age}+ 218.7925843 x_{smokers}$
+$\widehat{y}_{new.cases} = 59518.694  - 0.24490991 x_{new_tests} + 0.24490991 x_{population} +4.6709x_{hosp.patients} + 1397.858 x_{aged.65.older}- 54.705     x_{cardiovasc.death.rate}- 1642.655 x_{life.expectancy} -371.30791551x_{extreme.poverty}+ 0.20325820 x_{gdp.per.capita}- 468.88355355x_{meidan.age}+ 218.7925843 x_{smokers}$
 
-Adjusted R Squared of our model is: 0.9391 , meaning that the proportion of the total variation that is explained by the model is 93.91%.
+Adjusted R Squared of our model is: 0.9391, meaning that the proportion of the total variation that is explained by the model is 93.91%.
 
 ```{r}
 model_cases_revised = lm(new_cases ~ new_tests + population + hosp_patients + aged_65_older + cardiovasc_death_rate +life_expectancy+aged_65_older+extreme_poverty+gdp_per_capita +median_age +smokers, data=covid_agg)
