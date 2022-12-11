@@ -133,31 +133,34 @@ Many countries and facilities are under reporting Covid-19 statistics like cases
 
 ```{r}
 # Removing locations from the data set that are aggregates of countries
-not_countries <- c("Europe", "European Union", "High Income", "International", "Africa", "Asia", "Low Income", "Lower Middle Income", "North America", "Oceania", "South America", "Upper Middle Income", "World")
-covid_raw <- covid_raw[!covid_raw$location %in% not_countries, ]
+not_countries <- c("Europe", "European Union", "High income", "International", "Africa", "Asia", "Low income", "Lower middle income", "North America", "Oceania", "South America", "Upper middle income", "World")
 
+# Calculating the lowest fifth percentile of average daily cases per million (smoothed over 7 days), 
+# and then identifying the countries with less than the identified value
 avg_daily_cases_per_million = aggregate(new_cases_smoothed_per_million ~ location, data=covid_raw, FUN=mean)
 
 p5_cases = quantile(avg_daily_cases_per_million$new_cases_smoothed_per_million, probs = 0.05)
 
-bad_countries_cases = avg_daily_cases_per_million$location[avg_daily_cases_per_million$new_cases_smoothed_per_million < p5_cases]
+low_countries_cases = avg_daily_cases_per_million$location[avg_daily_cases_per_million$new_cases_smoothed_per_million < p5_cases]
 
-bad_countries_cases
-
-
+# Calculating the lowest fifth percentile of average daily deaths per million (smoothed over 7 days), 
+# and then identifying the countries with less than the identified value
 avg_daily_deaths_per_million = aggregate(new_deaths_smoothed_per_million ~ location, data=covid_raw, FUN=mean)
 
 p5_deaths = quantile(avg_daily_deaths_per_million$new_deaths_smoothed_per_million, probs = 0.05)
 
-bad_countries_deaths = avg_daily_deaths_per_million$location[avg_daily_deaths_per_million$new_deaths_smoothed_per_million < p5_deaths]
+low_countries_deaths = avg_daily_deaths_per_million$location[avg_daily_deaths_per_million$new_deaths_smoothed_per_million < p5_deaths]
 
-bad_countries_deaths
+# Appending the identified low-rate countries (and the non-countries in the dataset) into a single list
+low_country_list1 <- append(low_countries_cases, low_countries_deaths)
 
-bad_country_list <- append(bad_countries_cases, bad_countries_deaths)
+low_country_list <- append(not_countries, low_country_list1)
 
-unqique_bad_country_list = unique(bad_country_list)
+# Creating a list with only the unique countries
+unique_low_country_list = unique(low_country_list)
 
-covid_data <- covid_raw[!covid_raw$location %in% unqique_bad_country_list, ]
+# Removing the identified countries in the unique list from the dataset
+covid_data <- covid_raw[!covid_raw$location %in% unique_low_country_list, ]
 ```
 
 
