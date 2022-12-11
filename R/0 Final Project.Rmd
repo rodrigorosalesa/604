@@ -203,13 +203,13 @@ zero_country_case_deaths <- append(zero_country_cases_list, zero_country_deaths_
 covid_agg <- covid_agg[!covid_agg$location %in% zero_country_case_deaths, ]
 
 # Getting countries with bottom 5% of new_cases_smoothed_per_million
-tenth_percentile_cases <- quantile(covid_agg$new_cases_smoothed_per_million, probs = 0.05, na.rm = TRUE)
-bad_country_cases <- covid_agg[covid_agg$new_cases_smoothed_per_million < tenth_percentile_cases,]
+fifth_percentile_cases <- quantile(covid_agg$new_cases_smoothed_per_million, probs = 0.05, na.rm = TRUE)
+bad_country_cases <- covid_agg[covid_agg$new_cases_smoothed_per_million < fifth_percentile_cases,]
 bad_country_list_cases <- unique(bad_country_cases$location)
 
 # Getting countries with bottom 5% of new_deaths_smoothed_per_million
-tenth_percentile_deaths <- quantile(covid_agg$new_deaths_smoothed_per_million, probs = 0.05, na.rm = TRUE)
-bad_country_deaths <- covid_agg[covid_agg$new_deaths_smoothed_per_million < tenth_percentile_deaths,]
+fifth_percentile_deaths <- quantile(covid_agg$new_deaths_smoothed_per_million, probs = 0.05, na.rm = TRUE)
+bad_country_deaths <- covid_agg[covid_agg$new_deaths_smoothed_per_million < fifth_percentile_deaths,]
 bad_country_list_deaths <- unique(bad_country_deaths$location)
 
 # Remove countries that appear in either above lists
