@@ -123,43 +123,19 @@ options(scipen=999) # show results without scientific notation
 ## Data Import
 As our data is in CSV format, we simple use the function **read_csv()** to import our file into a data frame.
 ```{r}
-covid_raw <- read_csv('data.csv', show_col_types = FALSE)
+covid_data <- read_csv('data.csv', show_col_types = FALSE)
 ```
 
 
 ## Data Cleaning 
-Many countries and facilities are under reporting Covid-19 statistics like cases and deaths, according to Claire Klobucista from Council of Foreign Relations. This is could be catastrophically as government could not respond accordingly to the real situation. For our research this is very important as well, if we put bad data into our model, we would create a bad model. To solve this problem we will remove from our dataset the countries that are present in the bottom 5% of number of new cases smoothed per million and number of new deaths smoothed per million. 
-
+Our data set present countries and zones that are the aggregation of multiple countries, for example Europe that is the aggregation of all countries in Europe, as we are building a model that will try to predict cases and deaths for a country, we need to remove the aggregations to not cause noice in our results. 
 ```{r}
 # Removing locations from the data set that are aggregates of countries
 not_countries <- c("Europe", "European Union", "High Income", "International", "Africa", "Asia", "Low Income", "Lower Middle Income", "North America", "Oceania", "South America", "Upper Middle Income", "World")
-covid_raw <- covid_raw[!covid_raw$location %in% not_countries, ]
-
-# Removing countries with 0 covid cases or deaths 
-zero_country_deaths <- covid_raw[covid_raw$new_deaths_smoothed_per_million == 0 ,]
-zero_country_cases <- covid_raw[covid_raw$new_cases_smoothed_per_million ==0 ,]
-zero_country_cases_list <- unique(zero_country_cases$location)
-zero_country_deaths_list <- unique(zero_country_deaths$location)
-zero_country_case_deaths <- append(zero_country_cases_list, zero_country_deaths_list)
-covid_raw <- covid_raw[!covid_raw$location %in% zero_country_case_deaths, ]
-
-# Getting countries with bottom 5% of new_cases_smoothed_per_million
-tenth_percentile_cases <- quantile(covid_raw$new_cases_smoothed_per_million, probs = 0.05, na.rm = TRUE)
-bad_country_cases <- covid_raw[covid_raw$new_cases_smoothed_per_million < tenth_percentile_cases,]
-bad_country_list_cases <- unique(bad_country_cases$location)
-
-# Getting countries with bottom 5% of new_deaths_smoothed_per_million
-tenth_percentile_deaths <- quantile(covid_raw$new_deaths_smoothed_per_million, probs = 0.05, na.rm = TRUE)
-bad_country_deaths <- covid_raw[covid_raw$new_deaths_smoothed_per_million < tenth_percentile_deaths,]
-bad_country_list_deaths <- unique(bad_country_deaths$location)
-
-# Remove countries that appear in either above lists
-bad_country_list <- append(bad_country_list_deaths, bad_country_list_cases)
-good_countries <-   covid_raw[!covid_raw$location %in% bad_country_list, ]
-covid_data <- good_countries
+covid_data <- covid_data[!covid_data$location %in% not_countries, ]
 ```
 
-More cleaning tasks were missing, for starters we generated a new column called *smokers* that was the average of *female_smokers* and *male_smokers*, after that we replaced all the null values for 0s, as we can´t assign a number to a factor, we decided to drop continent and iso_code, columns, test_unitsand date as are not important for our analysis.
+More cleaning tasks were missing, for starters we generated a new column called *smokers* that was the average of *female_smokers* and *male_smokers*, after that we replaced all the null values for 0s, as we can´t assign a number to a factor, we decided to drop continent, iso_code, test_unitsand and date as are not important for our analysis.
 ```{r}
 # Creating the column "smokers"
 covid_data$smokers <- (covid_data[['male_smokers']] + covid_data[['female_smokers']]) / 2
@@ -211,8 +187,34 @@ covid[is.na(covid)] = 0
 
 ## Data Preparation 
 To create the final dataset that will be used to create the *New Cases Model* and *New Deaths Model* we performed an aggregation function (mean) across the variable country as we are only interested in having one data point per country. The new data point will be the mean of every other variable present in the table; we decided to use the mean as that is the best way to aggregate the variables that we are interested on using like new cases, new deaths, population, stringency index and more.
+
+Many countries and facilities are under reporting Covid-19 statistics like cases and deaths, according to Claire Klobucista from Council of Foreign Relations. This is could be catastrophically as government could not respond accordingly to the real situation. For our research this is very important as well, if we put bad data into our model, we would create a bad model. To solve this problem we will remove from our dataset the countries that are present in the bottom 5% of number of new cases smoothed per million and number of new deaths smoothed per million. 
 ```{r}
 covid_agg <- covid %>% group_by(location) %>% summarise(across(everything(), mean), .groups = 'drop') %>% as.data.frame()
+
+# Removing countries with 0 covid cases or deaths 
+zero_country_deaths <- covid_agg[covid_agg$new_deaths_smoothed_per_million == 0 ,]
+zero_country_cases <- covid_agg[covid_agg$new_cases_smoothed_per_million ==0 ,]
+
+zero_country_cases_list <- unique(zero_country_cases$location)
+zero_country_deaths_list <- unique(zero_country_deaths$location)
+
+zero_country_case_deaths <- append(zero_country_cases_list, zero_country_deaths_list)
+covid_agg <- covid_agg[!covid_agg$location %in% zero_country_case_deaths, ]
+
+# Getting countries with bottom 5% of new_cases_smoothed_per_million
+tenth_percentile_cases <- quantile(covid_agg$new_cases_smoothed_per_million, probs = 0.05, na.rm = TRUE)
+bad_country_cases <- covid_agg[covid_agg$new_cases_smoothed_per_million < tenth_percentile_cases,]
+bad_country_list_cases <- unique(bad_country_cases$location)
+
+# Getting countries with bottom 5% of new_deaths_smoothed_per_million
+tenth_percentile_deaths <- quantile(covid_agg$new_deaths_smoothed_per_million, probs = 0.05, na.rm = TRUE)
+bad_country_deaths <- covid_agg[covid_agg$new_deaths_smoothed_per_million < tenth_percentile_deaths,]
+bad_country_list_deaths <- unique(bad_country_deaths$location)
+
+# Remove countries that appear in either above lists
+bad_country_list <- append(bad_country_list_deaths, bad_country_list_cases)
+covid_agg <-   covid_agg[!covid_agg$location %in% bad_country_list, ]
 ```
 
 #Analysis
@@ -240,7 +242,7 @@ model_cases_full = lm(new_cases ~ aged_65_older + smokers + cardiovasc_death_rat
 summary(model_cases_full)
 ```
 
-Using the *Step Wise Regression Procedure* to create the best fit additive model we found out that only 3 variables were significant; for these 3 terms we can reject reject the Null Hypothesis for the individual coefficient t test, meaning that the terms are significant and the coefficients should be different than 0. The 3 terms that passed the mentioned test are: **population**, **hosp_patients**, **life expectancy**.
+Using the *Step Wise Regression Procedure* to create the best fit additive model we found out that only 3 variables were significant; for these 3 terms we can reject reject the Null Hypothesis for the individual coefficient t test, meaning that the terms are significant and the coefficients should be different than 0. The 3 terms that passed the mentioned test are: **population **, **new_tests**, **hosp_patients**, **cardiovasc_death_rate **, **life_expectancy **, **aged_65_older**, **extreme_poverty**, **gdp_per_capita**, **median_age**, **smokers** .
 
 Hypothesis Testing for Individual Coefficient t tests.\
 $H_0: \beta_i = 0$\
@@ -252,12 +254,12 @@ model_cases_stepwise = ols_step_both_p(model_cases_full, pent=0.1, prem=0.3, pro
 ```
 
 The model obtained after performing the *Step Wise Regression Procedure* is:\
-$\widehat{y}_{new.cases} = -508.038 + 0.022600844 x_{new_tests} + 0.000076064 x_{population} -0.404601984 x_{hosp.patients} + 103.552 x_{aged.65.older}$
+$\widehat{y}_{new.cases} = 130881.628  - 0.24490991 x_{new_tests} + 0.24490991 x_{population} +4.6709x_{hosp.patients} + 1397.858 x_{aged.65.older}- 54.705     x_{cardiovasc.death.rate}- 1642.655 x_{life.expectancy} -371.30791551x_{extreme.poverty}+ 0.20325820 x_{gdp.per.capita}- 468.88355355x_{meidan.age}+ 218.7925843 x_{smokers}$
 
-Adjusted R Squared of our model is: 0.8692, meaning that the proportion of the total variation that is explained by the model is 86.92%.
+Adjusted R Squared of our model is: 0.9391 , meaning that the proportion of the total variation that is explained by the model is 93.91%.
 
 ```{r}
-model_cases_revised = lm(new_cases ~ new_tests + population + hosp_patients + aged_65_older, data=covid_agg)
+model_cases_revised = lm(new_cases ~ new_tests + population + hosp_patients + aged_65_older + cardiovasc_death_rate +life_expectancy+aged_65_older+extreme_poverty+gdp_per_capita +median_age +smokers, data=covid_agg)
 summary(model_cases_revised)
 ```
 
@@ -273,10 +275,10 @@ model_cases_null <- lm(new_cases~1,data=covid_agg)
 anova(model_cases_null,model_cases_revised)
 ```
 
-From the output of our global F-test, we get a p-value of 0.000005709  which is less than our alpha value of 0.05 so we can reject our null hypothesis that all of our regression coefficients are equal to 0 and can conclude with a significance level of 0.05 that our model has at least one significant predictor.
+From the output of our global F-test, we get a p-value of 0.00000000000000022   which is less than our alpha value of 0.05 so we can reject our null hypothesis that all of our regression coefficients are equal to 0 and can conclude with a significance level of 0.05 that our model has at least one significant predictor.
 
 
-Using interactions terms can be a powerful way to increase the efficiency of our model as sometimes the effect of an independent variable on a dependent variable, in our case new Covid-19 cases, is not constant over all of the values of the other independent variables. As population is on our terms we decided to include interactions terms as depending on the total population of a country all the other variables could change.
+Using interactions terms can be a powerful way to increase the efficiency of our model as sometimes the effect of an independent variable on a dependent variable, in our case new Covid-19 cases, is not constant over all of the values of the other independent variables. 
 
 Hypothesis Testing for Individual Coefficient t tests.\
 $H_0: \beta_i = 0$\
@@ -286,12 +288,20 @@ $(i = \text{(population, hosp_patients, aged_65_older, new_tests)^2})$
 We failed to reject our Null Hypothesis for the interaction terms, suggesting they should not be including in our model.
 
 ```{r}
-model_cases_interactions = lm(new_cases ~ (population + hosp_patients + aged_65_older +new_tests)^2, data=covid_agg)
+model_cases_interactions = lm(new_cases ~ (new_tests + population + hosp_patients + aged_65_older + cardiovasc_death_rate +life_expectancy+aged_65_older+extreme_poverty+gdp_per_capita +median_age +smokers)^2, data=covid_agg)
 summary(model_cases_interactions)
 ```
 
+```{r}
+model_cases_interactions_2 <- lm(new_cases ~ new_tests + population + hosp_patients + aged_65_older + cardiovasc_death_rate +life_expectancy+aged_65_older+extreme_poverty+gdp_per_capita +median_age +smokers + new_tests:hosp_patients+new_tests:life_expectancy+new_tests:gdp_per_capita+new_tests:median_age+population:hosp_patients+population:aged_65_older+population:cardiovasc_death_rate+population:life_expectancy+population:median_age+population:smokers+hosp_patients:life_expectancy+hosp_patients:gdp_per_capita+hosp_patients:smokers, data=covid_agg)
+summary(model_cases_interactions_2)
+```
 
-We would like to try a higher order term to see if we can improve our Adjusted R Squared, as some of the relations with the dependent variable could be curvature instead of linear. To check this relations we will use the ggpairs to plot the correlation between the independent variables and the dependent variables. 
+Our new model with interaction terms has an adjusted R-squared value of 0.9991 which is 0.06 larger than our model without interaction terms. This means it explains 99.91% of variance in new_cases. The new model is: 
+
+$\widehat{y}_{new.cases} = -979.1904  - 1.6289  x_{new_tests} + 0.000313 x_{population} + 51.7419x_{hosp.patients} + 19.5443 x_{aged.65.older}+ 2.81409        x_{cardiovasc.death.rate}+ 11.1993 x_{life.expectancy} -22.2164 x_{extreme.poverty}+ 0.009387 x_{gdp.per.capita}- 17.2106 x_{meidan.age} - 13.3943 x_{smokers} + 0.00007233 x_{new_tests:hosp_patients}+ 0.0247 x_{new_tests:life_expectancy}-0.00000351 x_{new_tests:gdp.per.capita}-0.006533 x_{new_tests:meidan.age}- 0.000000281 x_{population:hosp_patients}+0.00001372 x_{population:aged_65_older}- 0.000000145 x_{population:cardiovasc.death.rate}- 0.000008162 x_{population:life.expectancy}+0.00001176 x_{population:median.age}-0.00000141 x_{population:smokers}- 0.6344 x_{hosp.patients:life.expectancy}+0.000142 x_{hosp.patients:gdp.per.capita}-0.1519x_{hosp.patients:smokers}$
+
+Because the adjusted R-squared of our interaction model is already so high, we do not think it is worth checking for higher order terms due to diminishing returns in adjusted R-squared increases vs model complexity.
 
 ```{r}
 covid_higher_order <-data.frame(covid_agg$new_cases, covid_agg$population, covid_agg$hosp_patients, covid_agg$aged_65_older, covid_agg$new_tests)
@@ -331,7 +341,7 @@ Testing for normality using the Shapiro-Wilk test:
 We will set the alpha value to 0.05.
 
 ```{r}
-shapiro.test(residuals(model_cases_squared))
+shapiro.test(residuals(model_cases_interactions_2))
 ```
 
 
@@ -343,7 +353,7 @@ stat_qq() +
 stat_qq_line()
 ```
 
-From the output of our test, we get a p-value of 0.4944 which is greater than 0.05. This means we fail to reject our null hypothesis that our sample data is significantly normally distributed and conclude with a significance level of 0.05 that our sample data is not normally distributed. This means that there is no problem with the normality assumption.
+From the output of our test, we get a p-value of 0.000004655 which is less than 0.05. This means we can  reject our null hypothesis that our sample data is significantly normally distributed and conclude with a significance level of 0.05 that our sample data is not normally distributed. This means that there is a problem with the normality assumption.
 
 #### Homoscedasticity Assumption
 
@@ -356,16 +366,16 @@ Testing for heteroscedasticity using the Breusch-Pagan test:
 We will set the alpha value to 0.05.
 
 ```{r}
-bptest(model_cases_squared)
+bptest(model_cases_interactions_2)
 ```
 
-From the output of our test, we get a p-value of 0.3832 which is greater than 0.05. This means we fail to reject the null hypothesis that there is homoscedasticity and conclude with a significance level of 0.05 that our model is not homoscedastic. This means that there is no problem with the homoscedasticity assumption. 
+From the output of our test, we get a p-value of 0.1541 which is greater than 0.05. This means we fail to reject the null hypothesis that there is homoscedasticity and conclude with a significance level of 0.05 that our model is not homoscedastic. This means that there is no problem with the homoscedasticity assumption. 
 
 #### Linearity Assumption 
 
 Testing for linearity using a residuals vs predicted $\hat{Y}$ plot:
 ```{r}
-ggplot(model_cases_squared, aes(x=.fitted, y=.resid)) +
+ggplot(model_cases_interactions_2, aes(x=.fitted, y=.resid)) +
 geom_point() + geom_smooth()+
 geom_hline(yintercept = 0)
 ```
@@ -376,33 +386,45 @@ Looking at the plot above, our model is likely not linear. However, it is not co
 
 Testing for outliers using leverage:
 ```{r}
-lev=hatvalues(model_cases_squared)
-p = length(coef(model_cases_squared))
+lev=hatvalues(model_cases_interactions_2)
+p = length(coef(model_cases_interactions_2))
 n = nrow(covid_agg)
 outlier3p = lev[lev>(3*p/n)]
 outlier3p
 ```
 
 ```{r}
-plot(model_cases_squared,which=5)
+plot(model_cases_interactions_2,which=5)
 ```
 
-From our output, we have no influential outlier in our data.
+From our output, we have no influential outlier in our data at rows 12, 72, 77, 90, 95, 96, 102, and 104. Removing these rows:
+
+```{r}
+covid_agg2 <- covid_agg[-c(12,72,77,90,95,96,102,104),]
+
+```
+
 
 
 #### Independant Errors Assumption
 
 Plotting residuals vs. fitted values to see if the error terms look independant from each other:
 ```{r}
-ggplot(model_cases_squared, aes(x=.fitted, y=.resid)) +
+ggplot(model_cases_interactions_2, aes(x=.fitted, y=.resid)) +
 geom_point() + geom_smooth()+
 geom_hline(yintercept = 0)
 ```
 
 Looking at the plot above, it seems that the residuals do not seem to be  evenly distributed, meaning that the residuals are not independent from each other. However, it is not conclusive as just looking at a graph can be subjective.
 
-Since our model passed majority of the assumptions, we will leave the model as is. Therefore, the final model for new_cases is: 
-$\widehat{y}_{new.cases} = -446.308 + 0.000069x_{population} - 0.366 x_{hosp.patients} +68.194 x_{aged.65.older} + 0.066606x_{new.tests}- 0.0000004 x^2_{new.tests} + 0.000000000001 x^3_{new.tests}$
+```{r}
+model_cases_interactions_3 <- lm(new_cases ~ new_tests + population + hosp_patients + aged_65_older + cardiovasc_death_rate +life_expectancy+aged_65_older+extreme_poverty+gdp_per_capita +median_age +smokers + new_tests:hosp_patients+new_tests:life_expectancy+new_tests:gdp_per_capita+new_tests:median_age+population:hosp_patients+population:aged_65_older+population:cardiovasc_death_rate+population:life_expectancy+population:median_age+population:smokers+hosp_patients:life_expectancy+hosp_patients:gdp_per_capita+hosp_patients:smokers, data=covid_agg2)
+summary(model_cases_interactions_3)
+```
+
+Our new model with interaction terms has an adjusted R-squared value of 0.9993 which is 0.0002 larger than our model without interaction terms. This means it explains 99.93% of variance in new_cases. The new model is: 
+
+$\widehat{y}_{new.cases} = -1916.38435235562  - 1.581 x_{new_tests} + 0.000314  x_{population} + 42.855 {hosp.patients} - 30.7078 x_{aged.65.older}+ 3.2676           x_{cardiovasc.death.rate}+ 23.995 x_{life.expectancy} -22.27244 x_{extreme.poverty}+ 0.00191 x_{gdp.per.capita}- 4.00416 x_{meidan.age} - 18.437 x_{smokers} + 0.0000746 x_{new_tests:hosp_patients}+ 0.0241   x_{new_tests:life_expectancy}-0.0000018 x_{new_tests:gdp.per.capita}-0.007222  x_{new_tests:meidan.age}- 0.000000303 x_{population:hosp_patients}+0.0000152 x_{population:aged_65_older}- 0.00000014 x_{population:cardiovasc.death.rate}- 0.0000081 x_{population:life.expectancy}+0.0000113 x_{population:median.age}-0.0000014 x_{population:smokers}- 0.5114    x_{hosp.patients:life.expectancy}+0.000089 x_{hosp.patients:gdp.per.capita}-0.125 x_{hosp.patients:smokers}$
 
 
 ### New Deaths Model
@@ -591,7 +613,7 @@ This model gives us an adjusted R-squared value of 0.9225. Which means out model
 
 
 
-## Multiple Linear Regression Models for Research Question 2
+# Multiple Linear Regression Models for Research Question 2
 
 
 The second guiding question for this project is:  
@@ -866,5 +888,7 @@ $\widehat{New Deaths} = $ (populate after country cleaning)
 \newpage
 # References
 Klobucista, Claire (2021, May 10). By How Much Are Countries Underreporting COVID-19 Cases and Deaths?. Council of Foreign Relations. https://www.cfr.org/in-brief/how-much-are-countries-underreporting-covid-19-cases-and-deaths
+
+
 
 
