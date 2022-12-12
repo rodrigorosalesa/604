@@ -1143,10 +1143,77 @@ $\widehat{New Deaths} = 58.4964 - 35.3352 X_{reproduction.rate} + 0.0004054 X_{n
 
 ## Question 1
 
-### Summary
+### Average Daily Cases Model
+
+To build a model for the daily COVID-19 cases observed in a country based on the population-related metrics, we considered the following variables as independent variables:  
+   
+    - aged_65_older
+    - smokers 
+    - cardiovasc_death_rate 
+    - diabetes_prevalence 
+    - extreme_poverty 
+    - gdp_per_capita 
+    - median_age 
+    - life_expectancy 
+    - population 
+    - stringency_index 
+    - human_development_index 
+    - population_density
+    
+After performing Step Wise Regression Method, we end up with the following terms:
+
+    - population  
+    - aged_65_older 
+    - gdp_per_capita
+
+We rejected the null hypothesis for the terms mentioned above, meaning that were significant and we could include them in out model.\
+Hypothesis Testing for Individual Coefficient t tests.\
+$H_0: \beta_i = 0$\
+$H_a: \beta_i \neq 0$\
+$(i = \text{population, aged.65.older, gdp.per.capita})$
+
+The model at this stage is the following:\
+$\widehat{y}_{new.daily.cases} = - 3863.4429 + 0.00004794 x_{population} + 522.5716 x_{aged.65.older} + 0.0715 x_{gdp.per.capita}$\
+Adjusted R Squared = 0.3497.
+
+Then, we checked for interactions terms and performed an individual coefficient t test to evaluate which interactions terms to include.\
+$H_0: \beta_i = 0$\
+$H_a: \beta_i \neq 0$\
+$(i = \text{population, aged.65.older, gdp.per.capita})$
+
+We rejected the null hypothesis for *population:gdp_per_capita* and *aged_65_older:gdp_per_capita* so we include them in the model.\
+$\widehat{y}_{new.daily.cases} = - 317.9720 - 0.0000004255 x_{population} + 69.5871 x_{aged.65.older} - 0.0702 x_{gdp.per.capita} + 0.000000005053 x_{population} x_{gdp.per.capita} + 0.0100 x_{aged.65.older} x_{gdp.per.capita}$\
+Adjusted R Squared = 0.6551.
+
+We tested high orther terms with the highest correlation independent variable, population, using individual coefficient t test we failed to reject the null, meaning that the higher order term should not be included in our model.\
+$H_0: \beta_i = 0$\
+$H_a: \beta_i \neq 0$\
+$(i = \text{population^2})$
+
+Checking for regression assumptions it´s an important part of our model development as not fulfilling them could mean that the results are not trustworthy. 
+
+Assumptions that we checked:
+
+    - Normality: using the 
+    - 
+
+Our final model to predict average daily cases of Covid-19 according to population-related metrics is:\
+$\widehat{y}_{new.daily.cases} = - 317.9720 - 0.0000004255 x_{population} + 69.5871 x_{aged.65.older} - 0.0702 x_{gdp.per.capita} + 0.000000005053 x_{population} x_{gdp.per.capita} + 0.0100 x_{aged.65.older} x_{gdp.per.capita}$\
+
+We decided
 
 
-### Prediction
+#### Prediction
+
+
+
+### Average Daily Deaths Model
+
+#### Summary
+
+#### Prediction
+
+
 
 
 ## Results for Question 2

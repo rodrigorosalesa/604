@@ -256,7 +256,7 @@ model_cases_stepwise = ols_step_both_p(model_cases_full, pent=0.1, prem=0.3, pro
 ```
 
 The model obtained after performing the *Step Wise Regression Procedure* is:\
-$\widehat{y}_{new.daily.cases} = - 3863.4429 + 0.00004794 x_{population} + 522.5716 x_{aged.65.older} + 0.0715 x_{gdp.per.capita}$
+$\widehat{y}_{daily.cases} = - 3863.4429 + 0.00004794 x_{population} + 522.5716 x_{aged.65.older} + 0.0715 x_{gdp.per.capita}$
 
 Adjusted R Squared of our model is: 0.3497, meaning that the proportion of the total variation that is explained by the model is 34.97%.
 ```{r}
@@ -299,7 +299,7 @@ model_cases_interactions_2 = lm(new_cases ~ population + aged_65_older + gdp_per
 summary(model_cases_interactions_2)
 ```
 The interaction model with the best fit is:\
-$\widehat{y}_{new.daily.cases} = - 317.9720 - 0.0000004255 x_{population} + 69.5871 x_{aged.65.older} - 0.0702 x_{gdp.per.capita} + 0.000000005053 x_{population} x_{gdp.per.capita} + 0.0100 x_{aged.65.older} x_{gdp.per.capita}$
+$\widehat{y}_{daily.cases} = - 317.9720 - 0.0000004255 x_{population} + 69.5871 x_{aged.65.older} - 0.0702 x_{gdp.per.capita} + 0.000000005053 x_{population} x_{gdp.per.capita} + 0.0100 x_{aged.65.older} x_{gdp.per.capita}$
 
 As sometimes the relationship between the independent variables and the dependent variable could not be a straight line relationship, but a curvature one, we are going to check for higher order terms to see if we can improve our model. To do this we will first see the correlation between our independent variables and the dependent variable to have a better idea on which variable to we need to check for higher order. 
 ```{r}
@@ -323,7 +323,7 @@ summary(model_cases_squared)
 ```
 
 Our Final Best Fit Model is:\
-$\widehat{y}_{new.daily.cases} = - 317.9720 - 0.0000004255 x_{population} + 69.5871 x_{aged.65.older} - 0.0702 x_{gdp.per.capita} + 0.000000005053 x_{population} x_{gdp.per.capita} + 0.0100 x_{aged.65.older} x_{gdp.per.capita}$\
+$\widehat{y}_{daily.cases} = - 317.9720 - 0.0000004255 x_{population} + 69.5871 x_{aged.65.older} - 0.0702 x_{gdp.per.capita} + 0.000000005053 x_{population} x_{gdp.per.capita} + 0.0100 x_{aged.65.older} x_{gdp.per.capita}$\
 Our model has an Adjusted R Squared of 0.6551.
 
 
@@ -372,7 +372,7 @@ Testing for linearity using a residuals vs predicted $\hat{Y}$ plot:
 ```{r}
 ggplot(model_cases_interactions_2, aes(x=.fitted, y=.resid)) + geom_point() + geom_smooth()+ geom_hline(yintercept = 0) + ggtitle('Figure 3: Residuals vs Predicted for Average Daily Covid-19 Cases')
 ```
-Looking at the plot above, our model is likely not linear. However, it is not conclusive as just looking at a graph can be subjective.
+Looking at the plot above, our model is likely linear. However, it is not conclusive as just looking at a graph can be subjective.
 
 
 #### Outliers Assumption
@@ -395,7 +395,7 @@ Plotting residuals vs. fitted values to see if the error terms look independent 
 ```{r}
 ggplot(model_cases_interactions_2, aes(x=.fitted, y=.resid)) + geom_point() + geom_smooth()+ geom_hline(yintercept = 0) + ggtitle('Figure 5: Rresiduals vs. Fitted Values for Average Daily Covid-19 Cases')
 ```
-Looking at the plot above, it seems that the residuals do not seem to be  evenly distributed, meaning that the residuals are not independent from each other. However, it is not conclusive as just looking at a graph can be subjective.
+Looking at the plot above, it seems that the residuals are evenly distributed, meaning that the residuals are independent from each other. However, it is not conclusive as just looking at a graph can be subjective.
 
 
 #### Multicolinearity
@@ -408,13 +408,13 @@ A value in VIF between 1 and 5 suggest that there is a moderate multicollinearit
 
 
 #### Final Model
-As we shown, our Final Model did not pass the following assumptions: Homoscedasticity, Normality, Independant Errors and Linearity; only passing the Multicolinearity one. When using Box Cox transformation we got an error saying that *response variable must be positive*, looking online we could have used the Yeo-Johnson transformation, however it is outside of the scope of the course so we did not do it. 
+As we shown, our Final Model did not pass the following assumptions: Homoscedasticity, Normality; passing the Multicolinearity, Linearity and Independent errors. When using Box Cox transformation we got an error saying that *response variable must be positive*, looking online we could have used the Yeo-Johnson transformation, however it is outside of the scope of the course so we did not do it. 
 
 The final model to predict the average new daily Covid-19 cases for a specific country using is:\
-$\widehat{y}_{new.daily.cases} = - 317.9720 - 0.0000004255 x_{population} + 69.5871 x_{aged.65.older} - 0.0702 x_{gdp.per.capita} + 0.000000005053 x_{population} x_{gdp.per.capita} + 0.0100 x_{aged.65.older} x_{gdp.per.capita}$\
+$\widehat{y}_{daily.cases} = - 317.9720 - 0.0000004255 x_{population} + 69.5871 x_{aged.65.older} - 0.0702 x_{gdp.per.capita} + 0.000000005053 x_{population} x_{gdp.per.capita} + 0.0100 x_{aged.65.older} x_{gdp.per.capita}$\
 Our model has an Adjusted R Squared of 0.6551.
 
-We decided to declare the previously constructed model as the final model for average daily new cases fo question 1, despite its violation of the assumptions. It is important to note, therefore, that the results of the model are not necessarily trustworthy.
+We decided to declare the previously constructed model as the final model for average daily cases for question 1, despite its violation of the assumptions. It is important to note, therefore, that the results of the model are not necessarily trustworthy.
 ```{r}
 model_cases_final = lm(new_cases ~ population + aged_65_older + gdp_per_capita + population:gdp_per_capita + aged_65_older:gdp_per_capita, data=covid_agg)
 
@@ -443,7 +443,7 @@ model_deaths_stepwise = ols_step_both_p(model_deaths_full, pent=0.1, prem=0.3, p
 ```
 
 The model obtained after performing the *Step Wise Regression Procedure* is:\
-$\widehat{y}_{new.deaths} = - 125.4150 + 0.0000005815 x_{population} - 198.6108 x_{human.development.index}$
+$\widehat{y}_{daily.deaths} = - 125.4150 + 0.0000005815 x_{population} - 198.6108 x_{human.development.index}$
 
 Adjusted R Squared of our model is: 0.6635, meaning that the proportion of the total variation that is explained by the model is 66.35%.
 ```{r}
@@ -478,7 +478,7 @@ model_deaths_interactions = lm(new_deaths ~ (population + human_development_inde
 summary(model_deaths_interactions)
 ```
 The interaction model is:
-$\widehat{y}_{new.deaths} = 0.8449 - 0.000004976 x_{population} + 10.9375 x_{human.development.index} + 0.000008337 x_{population} x_{human.development.index}$
+$\widehat{y}_{daily.deaths} = 0.8449 - 0.000004976 x_{population} + 10.9375 x_{human.development.index} + 0.000008337 x_{population} x_{human.development.index}$
 More important our Adjusted R Squared is now 0.5141, which almost the double of what it was before.
 
 
@@ -504,7 +504,7 @@ summary(model_deaths_squared)
 ```
 
 The final model for average new deaths due to covid-19 is the interaction model:\
-$\widehat{y}_{new.deaths} = 0.8449 - 0.000004976 x_{population} + 10.9375 x_{human.development.index} + 0.000008337 x_{population} x_{human.development.index}$
+$\widehat{y}_{daily.deaths} = 0.8449 - 0.000004976 x_{population} + 10.9375 x_{human.development.index} + 0.000008337 x_{population} x_{human.development.index}$
 
 
 
@@ -553,7 +553,7 @@ Testing for linearity using a residuals vs predicted $\hat{Y}$ plot:
 ```{r}
 ggplot(model_deaths_interactions, aes(x=.fitted, y=.resid)) + geom_point() + geom_smooth()+ geom_hline(yintercept = 0) + ggtitle('Figure 8: Residuals vs Rredicted Values for Average Daily Covid-19 Deaths')
 ```
-Looking at the plot above, our model does not seem to be linear.
+Looking at the plot above, our model is likely linear. However, it is not conclusive as just looking at a graph can be subjective. 
 
 
 #### Outliers Assumption
@@ -588,11 +588,11 @@ Plotting residuals vs. fitted values to see if the error terms look independent 
 ```{r}
 ggplot(model_deaths_interactions, aes(x=.fitted, y=.resid)) + geom_point() + geom_smooth()+ geom_hline(yintercept = 0) + ggtitle('Figure 10: Residuals vs Fitted Values for Average Daily Covid-19 Deaths')
 ```
-Looking at the plot above, it seems that the residuals are not evenly distributed, meaning that the residuals are not independent from each other.
+Looking at the plot above, it seems that the residuals are evenly distributed, meaning that the residuals are independent from each other. However, it is not conclusive as just looking at a graph can be subjective.
 
 
 #### Final Model
-As we shown, our Final Model did not pass the following assumptions: Homoscedasticity, Normality, Independant Errors and Linearity; only passing the Multicolinearity one. When using Box Cox transformation we got an error saying that *response variable must be positive*, looking online we could have used the Yeo-Johnson transformation, however it is outside of the scope of the course so we did not do it. 
+As we shown, our Final Model pass the following assumptions Multicolinearity, Homoscedasticity, Independent errors and Linearity; only not passing the Normality Assumption. When using Box Cox transformation we got an error saying that *response variable must be positive*, looking online we could have used the Yeo-Johnson transformation, however it is outside of the scope of the course so we did not do it. 
 
 We will retrain our final model with the dataset without interactions. 
 
@@ -603,10 +603,10 @@ summary(model_deaths_final)
 ```
 
 Our final model for average new daily deaths due to Covid-19 is:\
-$\widehat{y}_{new.deaths} = 0.8449 - 0.000004976 x_{population} + 10.9375 x_{human.development.index} + 0.000008337 x_{population} x_{human.development.index}$\
+$\widehat{y}_{daily.deaths} = 0.8449 - 0.000004976 x_{population} + 10.9375 x_{human.development.index} + 0.000008337 x_{population} x_{human.development.index}$\
 More important our Adjusted R Squared is now 0.5141.
 
-We decided to declare the previously constructed model as the final model for average daily new deaths fo question 1, despite its violation of the assumptions. It is important to note, therefore, that the results of the model are not necessarily trustworthy.
+We decided to declare the previously constructed model as the final model for average daily deaths fo question 1, despite its violation of one assumption. It is important to note, therefore, that the results of the model are not necessarily trustworthy.
 ```{r}
 model_deaths_final = lm(new_deaths ~ (population + human_development_index)^2, data=covid_agg)
 summary(model_deaths_final)
