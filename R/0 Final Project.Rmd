@@ -280,10 +280,10 @@ From the output of our global F-test, we get a p-value of 0.00000000000000022 wh
 
 Using interactions terms can be a powerful way to increase the efficiency of our model as sometimes the effect of an independent variable on a dependent variable, in our case new Covid-19 cases, is not constant over all of the values of other independent variables. 
 
-Hypothesis Testing for Individual Coefficient t tests.\
-$H_0: \beta_i = 0$\
-$H_a: \beta_i \neq 0$\
-$(i = \text{(population, aged.65.older, gdp.per.capita)^2})$
+Hypothesis Testing for Individual Coefficient t tests.  
+$H_0: \beta_i = 0$  
+$H_a: \beta_i \neq 0$  
+$i$ = (population, aged.65.older, gdp.per.capita)^2  
 
 We rejected our null hypothesis for interaction terms **population:gdp_per_capita** and **aged_65_older:gdp_per_capita**, meaning that they should be including in the model.
 
@@ -311,9 +311,8 @@ ggpairs(covid_higher_order, lower = list(continuous="smooth_loess", combo="facet
 We can observe a curvature relationship between population and new_cases, as this term is the one with the highest correlation coefficient, we will include a higher order term to try to improve our model. 
 
 Hypothesis Testing for Individual Coefficient t tests.\
-$H_0: \beta_i = 0$\
-$H_a: \beta_i \neq 0$\
-$(i = \text{population^2})$
+$H_0: \beta_{population^2} = 0$\
+$H_a: \beta_{population^2} \neq 0$\
 
 We failed reject the Null Hypothesis for the squared term, population, so we will not include it in the model.
 ```{r}
@@ -470,7 +469,7 @@ Using interactions terms can be a powerful way to increase the efficiency of our
 Hypothesis Testing for Individual Coefficient t tests.\
 $H_0: \beta_i = 0$\
 $H_a: \beta_i \neq 0$\
-$(i = \text{(population, human_development_index)^2})$
+$i$ = (population, human_development_index)^2
 
 We rejected our Null Hypothesis for the interaction term **population:human_development_index** so we will include them in the model.
 ```{r}
@@ -494,7 +493,7 @@ Right away we can observe that there is a curvature relationship between populat
 Hypothesis Testing for Individual Coefficient t tests.\
 $H_0: \beta_i = 0$\
 $H_a: \beta_i \neq 0$\
-$(i = \text{population^2})$
+$i$ = population^2
 
 We failed reject the Null Hypothesis for the squared term, population, so we will not include it in the model.
 ```{r}
