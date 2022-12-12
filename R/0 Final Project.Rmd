@@ -603,7 +603,7 @@ Our final model for avg new dailt deaths due to Covid-19 is:\
 $\widehat{y}_{new.deaths} = 0.8449 - 0.000004976 x_{population} + 10.9375 x_{human.development.index} + 0.000008337 x_{population} x_{human.development.index}$\
 More important our Adjusted R Squared is now 0.5141.
 
-We decided to declare the previously constructed model as the final model for average daily new cases fo question 1, despite its violation of the assumptions. It is important to note, therefore, that the results of the model are not necessarily trustworthy.
+We decided to declare the previously constructed model as the final model for average daily new deaths fo question 1, despite its violation of the assumptions. It is important to note, therefore, that the results of the model are not necessarily trustworthy.
 ```{r}
 model_deaths_final = lm(new_deaths ~ (population + human_development_index)^2, data=covid_agg)
 summary(model_deaths_final)
