@@ -1170,7 +1170,7 @@ We rejected the null hypothesis for the terms mentioned above, meaning that were
 Hypothesis Testing for Individual Coefficient t tests.\
 $H_0: \beta_i = 0$\
 $H_a: \beta_i \neq 0$\
-$(i = \text{population, aged.65.older, gdp.per.capita})$
+$i=$ population, aged_65_older, gdp_per_capita
 
 The model at this stage is the following:\
 $\widehat{y}_{new.daily.cases} = - 3863.4429 + 0.00004794 x_{population} + 522.5716 x_{aged.65.older} + 0.0715 x_{gdp.per.capita}$\
@@ -1179,40 +1179,139 @@ Adjusted R Squared = 0.3497.
 Then, we checked for interactions terms and performed an individual coefficient t test to evaluate which interactions terms to include.\
 $H_0: \beta_i = 0$\
 $H_a: \beta_i \neq 0$\
-$(i = \text{population, aged.65.older, gdp.per.capita})$
+$i =$ any 2 pair interaction between population, aged_65_older, gdp_per_capita
 
 We rejected the null hypothesis for *population:gdp_per_capita* and *aged_65_older:gdp_per_capita* so we include them in the model.\
 $\widehat{y}_{new.daily.cases} = - 317.9720 - 0.0000004255 x_{population} + 69.5871 x_{aged.65.older} - 0.0702 x_{gdp.per.capita} + 0.000000005053 x_{population} x_{gdp.per.capita} + 0.0100 x_{aged.65.older} x_{gdp.per.capita}$\
 Adjusted R Squared = 0.6551.
 
-We tested high orther terms with the highest correlation independent variable, population, using individual coefficient t test we failed to reject the null, meaning that the higher order term should not be included in our model.\
+We tested high order terms with the highest correlation independent variable, population, using individual coefficient t test we failed to reject the null, meaning that the higher order term should not be included in our model.\
 $H_0: \beta_i = 0$\
 $H_a: \beta_i \neq 0$\
-$(i = \text{population^2})$
+$i =$ population^2
 
 Checking for regression assumptions it´s an important part of our model development as not fulfilling them could mean that the results are not trustworthy. 
 
 Assumptions that we checked:
 
-    - Normality: using the 
-    - 
+*Normality*\
+Using the Shaphiro-Wilk test we reject our null hypothesis meaning that our data is not significantly normally distributed. The Normality Assumption was not met.  
+**Null hypothesis:** the sample data are significantly normally distributed\
+**Alternative hypothesis:** the sample data are not significantly normally distributed\
+
+*Homoscedasticity*\
+Using the Breusch-Pagan test we reject our null hypothesis meaning that heteroscedasticity is present. The Homoscedasticity Assumption was not met.  
+**Null hypothesis:** heteroscedasticity is not present ($H_0: \sigma^2_1 = \sigma^2_2 =... = \sigma^2_n$)  
+**Alternative hypothesis:** heteroscedasticity is present ($H_a:$ at least one $\sigma^2_i$ is different from the others)  
+
+*Linearity*\
+Using the Residual vs Fitted values plot we concluded that our model satisfied the Linearity Assumption.
+
+*Independent Errors*\
+Using the Residual vs Fitted values plot we concluded that our model satisfied the Independent Errors Assumption.
+
+*Multicolinearity*\
+Using VIF Method to test for Multicolinearity, we observed that it was not present in our model, meaning that the Multicolinearity assumption was met.
+    
 
 Our final model to predict average daily cases of Covid-19 according to population-related metrics is:\
 $\widehat{y}_{new.daily.cases} = - 317.9720 - 0.0000004255 x_{population} + 69.5871 x_{aged.65.older} - 0.0702 x_{gdp.per.capita} + 0.000000005053 x_{population} x_{gdp.per.capita} + 0.0100 x_{aged.65.older} x_{gdp.per.capita}$\
+Adjusted R Squared = 0.6551.
 
-We decided
+Despite not passing the Normality and Homoscedasticity we decided to use the mentioned model as our final model for prediction purposes, but we understand that results may not be trustworthy.
 
 
 #### Prediction
+The purpose of building a model is to have the ability to predict unknown scenarios, using the model we created we will predict the average daily covid-19 cases for a specific country that has the mean of all our predictor terms.
+```{r}
+df = data.frame(population=mean(covid_agg$population), aged_65_older=mean(covid_agg$aged_65_older), gdp_per_capita=mean(covid_agg$gdp_per_capita))
+predict(model_cases_final, df,interval="predict")
+```
 
 
 
 ### Average Daily Deaths Model
+To build a model for the daily COVID-19 cases observed in a country based on the population-related metrics, we considered the following variables as independent variables:  
+   
+    - aged_65_older
+    - smokers 
+    - cardiovasc_death_rate 
+    - diabetes_prevalence 
+    - extreme_poverty 
+    - gdp_per_capita 
+    - median_age 
+    - life_expectancy 
+    - population 
+    - stringency_index 
+    - human_development_index 
+    - population_density
 
-#### Summary
+After performing Step Wise Regression Method, we end up with the following terms:
+
+    - population  
+    - human_development_index
+
+We rejected the null hypothesis for the terms mentioned above, meaning that were significant and we could include them in out model.\
+Hypothesis Testing for Individual Coefficient t tests.\
+$H_0: \beta_i = 0$\
+$H_a: \beta_i \neq 0$\
+$i=$ population, population_density
+
+The model at this stage is the following:\
+$\widehat{y}_{daily.deaths} = - 125.4150 + 0.0000005815 x_{population} - 198.6108 x_{human.development.index}$\
+Adjusted R Squared = 0.2626.
+
+Then, we checked for interactions terms and performed an individual coefficient t test to evaluate which interactions terms to include.\
+$H_0: \beta_i = 0$\
+$H_a: \beta_i \neq 0$\
+$i =$ any 2 pair interaction between population, population_density
+
+We rejected the null hypothesis for *population:human_development_index* so we include them in the model.\
+$\widehat{y}_{daily.deaths} = 0.8449 - 0.000004976 x_{population} + 10.9375 x_{human.development.index} + 0.000008337 x_{population} x_{human.development.index}$\
+Adjusted R Squared = 0.5141.
+
+We tested high order terms with the highest correlation independent variable, population, using individual coefficient t test we failed to reject the null, meaning that the higher order term should not be included in our model.\
+$H_0: \beta_i = 0$\
+$H_a: \beta_i \neq 0$\
+$i =$ population^2
+
+Checking for regression assumptions it´s an important part of our model development as not fulfilling them could mean that the results are not trustworthy. 
+
+Assumptions that we checked:
+
+*Normality*\
+Using the Shaphiro-Wilk test we reject our null hypothesis meaning that our data is not significantly normally distributed. The Normality Assumption was not met.  
+**Null hypothesis:** the sample data are significantly normally distributed\
+**Alternative hypothesis:** the sample data are not significantly normally distributed\
+
+*Homoscedasticity*\
+Using the Breusch-Pagan test we failed to reject our null hypothesis meaning that homoscedasticity is present. The Homoscedasticity Assumption was met.  
+**Null hypothesis:** heteroscedasticity is not present ($H_0: \sigma^2_1 = \sigma^2_2 =... = \sigma^2_n$)  
+**Alternative hypothesis:** heteroscedasticity is present ($H_a:$ at least one $\sigma^2_i$ is different from the others)  
+
+*Linearity*\
+Using the Residual vs Fitted values plot we concluded that our model satisfied the Linearity Assumption.
+
+*Independent Errors*\
+Using the Residual vs Fitted values plot we concluded that our model satisfied the Independent Errors Assumption.
+
+*Multicolinearity*\
+Using VIF Method to test for Multicolinearity, we observed that it was not present in our model, meaning that the Multicolinearity assumption was met.
+    
+
+Our final model to predict average daily deaths of Covid-19 according to population-related metrics is:\
+$\widehat{y}_{daily.deaths} = 0.8449 - 0.000004976 x_{population} + 10.9375 x_{human.development.index} + 0.000008337 x_{population} x_{human.development.index}$\
+Adjusted R Squared = 0.5141.
+
+Despite not passing the Normality we decided to use the mentioned model as our final model for prediction purposes, but we understand that results may not be trustworthy.
+
 
 #### Prediction
-
+The purpose of building a model is to have the ability to predict unknown scenarios, using the model we created we will predict the average daily covid-19 deaths for a specific country that has the mean of all our predictor terms.
+```{r}
+df = data.frame(population=mean(covid_agg$population), human_development_index=mean(covid_agg$human_development_index))
+predict(model_deaths_final, df,interval="predict")
+```
 
 
 
