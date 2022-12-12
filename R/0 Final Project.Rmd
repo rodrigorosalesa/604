@@ -1,6 +1,6 @@
 ---
 title: "Final Project: Public Safety Measures and Public Health for Covid-19"
-author: "Paul Croome(), Rodrigo Rosales Alvarez(), Ann Siddiqui() and Kane Smith (30179486)"
+author: "Paul Croome(), Rodrigo Rosales Alvarez(), Ann Siddiqui(30043081) and Kane Smith (30179486)"
 date: "2022-12-14"
 output: 
   pdf_document: 
@@ -27,9 +27,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 \newpage
 # Introduction
-The domain of our project covers healthcare-related indicators of the wellbeing of countries during the coronavirus disease 2019 (COVID-19) pandemic. In particular, we will be examining data related to the prevalence and severity of the COVID-19 pandemic and the governmental and societal measures taken to reduce the spread of the disease. These data were all daily reported between January 2020 and October 2022.
+The domain of our project covers healthcare-related indicators of the well being of countries during the coronavirus disease 2019 (COVID-19) pandemic. In particular, we will be examining data related to the prevalence and severity of the COVID-19 pandemic and the governmental and societal measures taken to reduce the spread of the disease. These datasets are all daily reported between January 2020 and October 2022.
 
 This is an interesting and important topic of study because, in our increasingly interconnected world, contagious diseases can be transmitted over vast distances remarkably easily. Even small, remote outbreaks of diseases anywhere in the world can swiftly turn into a global pandemic, which can then cause devastation on personal, societal, and worldwide scales. 
+
+For this reason, the team will investigate questions which seek to quantify the effects of a pandemic on both public health and determine healthcare measures which are effective in curbing the effects of a pandemic on public health. This may help if there are any future worldwide pandemics that occur, and may assist in governments bolstering their preparedness to avoid negative societal and personal impacts to the population and businesses. 
 
 
 ## Research Questions
@@ -49,10 +51,9 @@ This is an interesting and important topic of study because, in our increasingly
 
 \newpage
 # Data Set Definition
-The dataset we will use consists of diverse information related to the COVID-19 pandemic, including a country’s daily rates of COVID-19 diagnoses, hospitalizations, deaths, vaccinations, and booster shots. We will use features of these data to determine the prevalence and severity of the COVID-19 pandemic for each country . The dataset consists of daily information from January 1, 2020 to October 26, 2022 for more than 220 countries; each row corresponds to the Covid-19 information reported by an specific country in a certain date.
+The dataset presents countries and zones that are the aggregation of multiple countries, for example Europe that is the aggregation of all countries in the continent Europe, as we are building a model that will try to predict cases and deaths for a country, we need to remove the aggregations as to not cause noise in our results. 
 
-This dataset is in tabular form contained in a CSV file and is licensed for open access under the Creative Commons BY license. The dataset was put together by [Our World in Data](https://ourworldindata.org/coronavirus); more importantly, the data set is being updated daily by the same organization, for more information about the data pipeline and how the data set is being maintained click [here](https://docs.owid.io/projects/covid/en/latest/data-pipeline.html#overview).  
-
+Many countries and facilities are under reporting COVID-19 statistics like cases and deaths, according to Claire Klobucista from Council of Foreign Relations. This is could have catastrophical consequences, as governments may be unable respond accordingly to the reality of the situation. This is also very important to consider for the team's research as well because if the puts inaccurate data into the models, the model would be inaccurate to reality. To solve this problem we will remove countries that are present in the bottom 5% of number of new cases smoothed per million and number of new deaths smoothed per million from the dataset. 
 
 
 \newpage
