@@ -80,19 +80,17 @@ To answer the questions outlined in our introduction, we will be creating variou
   - Model 1
     - Model 1 Assumptions 
     - Model 1 Box-Cox Transformation
-    - Box-Cox Transformed Model Assumptions 
   - Model 2
     - Model 2 Assumptions
     - Model 2 Box-Cox Transformation
-    - Box-Cox Transformed Model Assumptions 
 
 **Results** 
 -Question 1
   - New Cases Model
   - New Deaths Model
 -Question 2
-  - Model 1
-  - Model 2
+  - Daily Cases Model
+  - Daily Deaths Model
 
 **Discussion** 
 -Question 1
@@ -181,8 +179,10 @@ covid[is.na(covid)] = 0
 
 **Independent Variable** 
 
-- _new_cases_: new confirmed cases of COVID-19. Continuous Variable.
-- _new_deaths_: new deaths attributed to COVID-19. Continuous Variable.
+- _new_cases_: new daily confirmed cases of COVID-19. Continuous Variable.
+- _new_cases_smoothed_: new daily confirmed cases of COVID-19, averaged over a 7-day window. Continuous Variable.
+- _new_deaths_: new daily deaths attributed to COVID-19. Continuous Variable.
+- _new_deaths_smoothed_: new daily deaths attributed to COVID-19, averaged over a 7-day window. Continuous Variable.
 
 
 **Dependent Variables**
@@ -305,7 +305,7 @@ As sometimes the relationship between the independent variables and the dependen
 ```{r}
 covid_higher_order <-data.frame(covid_agg$new_cases, covid_agg$population, covid_agg$aged_65_older, covid_agg$gdp_per_capita)
 
-ggpairs(covid_higher_order, lower = list(continuous="smooth_loess", combo="facethist", discrete="facetbar", na="na")) + ggtitle('Figure 1: Correlation for terms present in Model Average Daily Cases')
+ggpairs(covid_higher_order, lower = list(continuous="smooth_loess", combo="facethist", discrete="facetbar", na="na")) + ggtitle('Figure 1: Pairwise Correlations For Terms Present in Model Average Daily Cases')
 ```
 
 We can observe a curvature relationship between population and new_cases, as this term is the one with the highest correlation coefficient, we will include a higher order term to try to improve our model. 
@@ -382,7 +382,7 @@ Testing for outliers using Cook´s distance:
 covid_agg[cooks.distance(model_cases_interactions_2)>1,]
 ```
 ```{r}
-plot(model_cases_interactions_2, which=5) + title('Figure 3: Hook´s Distance Plot for Average Daily Covid-19 Cases
+plot(model_cases_interactions_2, which=5) + title('Figure 4: Cook´s Distance Plot for Average Daily Covid-19 Cases
                                                   ')
 ```
 From our output, we do not have Outliers in our dataset that affect our results, no further action needed.
@@ -393,7 +393,7 @@ From our output, we do not have Outliers in our dataset that affect our results,
 
 Plotting residuals vs. fitted values to see if the error terms look independent from each other:
 ```{r}
-ggplot(model_cases_interactions_2, aes(x=.fitted, y=.resid)) + geom_point() + geom_smooth()+ geom_hline(yintercept = 0) + ggtitle('Figure 4: Rresiduals vs. Fitted Values for Average Daily Covid-19 Cases')
+ggplot(model_cases_interactions_2, aes(x=.fitted, y=.resid)) + geom_point() + geom_smooth()+ geom_hline(yintercept = 0) + ggtitle('Figure 5: Rresiduals vs. Fitted Values for Average Daily Covid-19 Cases')
 ```
 Looking at the plot above, it seems that the residuals do not seem to be  evenly distributed, meaning that the residuals are not independent from each other. However, it is not conclusive as just looking at a graph can be subjective.
 
@@ -486,7 +486,7 @@ We would like to try a higher order term to see if we can improve our Adjusted R
 ```{r}
 covid_higher_order <- data.frame(covid_agg$new_deaths, covid_agg$population, covid_agg$human_development_index)
 
-ggpairs(covid_higher_order, lower = list(continuous="smooth_loess", combo="facethist", discrete="facetbar", na="na")) + ggtitle('Figure 5: Correlation for terms present in Model Average Daily Deaths')
+ggpairs(covid_higher_order, lower = list(continuous="smooth_loess", combo="facethist", discrete="facetbar", na="na")) + ggtitle('Figure 6: Pairwise Correlation for Terms Present in Model Average Daily Deaths')
 ```
 
 Right away we can observe that there is a curvature relationship between population and new_deaths, for that reason we decided to try a square term to see if the model behaves better. 
@@ -525,7 +525,7 @@ shapiro.test(residuals(model_deaths_interactions))
 
 Plotting a Q-Q plot:
 ```{r}
-ggplot(model_deaths_interactions, aes(sample=model_deaths_interactions$residuals)) + stat_qq(color='blue') + stat_qq_line(color='red') + ggtitle('Figure 6: Q-Q plot for Average Daily Covid-19 Deaths')
+ggplot(model_deaths_interactions, aes(sample=model_deaths_interactions$residuals)) + stat_qq(color='blue') + stat_qq_line(color='red') + ggtitle('Figure 7: Q-Q plot for Average Daily Covid-19 Deaths')
 ```
 
 From the output of our test, we get a p-value of 0.00000000000000022 which is lower than 0.05. This means we reject and conclude with a significance level of 0.05 that our sample data is not normally distributed. This means that there is a problem with the normality assumption.
@@ -551,7 +551,7 @@ From the output of our test, we get a p-value of 0.466 which is more than 0.05. 
 
 Testing for linearity using a residuals vs predicted $\hat{Y}$ plot:
 ```{r}
-ggplot(model_deaths_interactions, aes(x=.fitted, y=.resid)) + geom_point() + geom_smooth()+ geom_hline(yintercept = 0) + ggtitle('Figure 7: Residuals vs Rredicted Values for Average Daily Covid-19 Deaths')
+ggplot(model_deaths_interactions, aes(x=.fitted, y=.resid)) + geom_point() + geom_smooth()+ geom_hline(yintercept = 0) + ggtitle('Figure 8: Residuals vs Rredicted Values for Average Daily Covid-19 Deaths')
 ```
 Looking at the plot above, our model does not seem to be linear.
 
@@ -564,7 +564,7 @@ covid_agg[cooks.distance(model_deaths_interactions)>1,]
 ```
 
 ```{r}
-plot(model_deaths_revised,which=5) + title('Figure 8: Residuals vs Leverage Plot for Average Daily Covid-19 Deaths
+plot(model_deaths_revised,which=5) + title('Figure 9: Residuals vs Leverage Plot for Average Daily Covid-19 Deaths
                                            ')
 ```
 
@@ -586,7 +586,7 @@ A value of VIF close to or below 1 means that there is no multicollinearity. Con
 
 Plotting residuals vs. fitted values to see if the error terms look independent from each other:
 ```{r}
-ggplot(model_deaths_interactions, aes(x=.fitted, y=.resid)) + geom_point() + geom_smooth()+ geom_hline(yintercept = 0) + ggtitle('Figure 9: Residuals vs Fitted Values for Average Daily Covid-19 Deaths')
+ggplot(model_deaths_interactions, aes(x=.fitted, y=.resid)) + geom_point() + geom_smooth()+ geom_hline(yintercept = 0) + ggtitle('Figure 10: Residuals vs Fitted Values for Average Daily Covid-19 Deaths')
 ```
 Looking at the plot above, it seems that the residuals are not evenly distributed, meaning that the residuals are not independent from each other.
 
@@ -769,7 +769,8 @@ Plotting a Q-Q plot:
 ```{r}
 ggplot(gq2_cases_intermod_reduced, aes(sample=gq2_cases_intermod_reduced$residuals)) +
 stat_qq() +
-stat_qq_line()
+stat_qq_line() + 
+ggtitle('Figure 11: Normal Q-Q Plot of Residuals for Daily COVID-19 Cases Model')
 ```
 
 From the output of our test, we get a p-value of 0.00000000000000022 which is less than 0.05. P-value < $\alpha$; therefore, we can reject the null hypothesis that our sample data is significantly normally distributed and conclude with a significance level of 0.05 that our sample data is not normally distributed. This means that there is a problem with the normality assumption. This result is reflected in the Q-Q plot as well, in which one can observe that the residuals deviate increasingly far from the diagonal line of normality as values fall further from 0.  
@@ -795,8 +796,9 @@ From the output of our test, we get a p-value of 0.00000000000000022, which is l
 Next, we tested for linearity using a residuals vs predicted $\hat{Y}$ plot:
 ```{r}
 ggplot(gq2_cases_intermod_reduced, aes(x=.fitted, y=.resid)) +
-geom_point() + geom_smooth()+
-geom_hline(yintercept = 0)
+geom_point() + geom_smooth() +
+geom_hline(yintercept = 0) + 
+ggtitle('Figure 12: Residuals vs Predicted Values for Daily COVID-19 Cases Model')
 ```
 
 In the plot above, it appears that there may be a funneling pattern between the residuals and fitted values, with residuals being more widely dispersed at higher fitted values than at lower fitted values. However, it is inconclusive whether this pattern is severe enough to warrant stating that the data is non-linear.  
@@ -807,7 +809,8 @@ In the plot above, it appears that there may be a funneling pattern between the 
 We checked for outliers in the model by using Cook's Distance, as visualized in a plot of Residuals vs. Leverage. We determined that any data points with a Cook's Distance greater than 1 should be removed from the model.  
 
 ```{r}
-plot(gq2_cases_intermod_reduced, which=5)
+plot(gq2_cases_intermod_reduced, which=5) + 
+title('Figure 13: Residuals vs Leverage Values for Daily COVID-19 Cases Model')
 ```
 
 From the model above, no data points have a Cook's Distance greater than 1, and only one point has a Cook's Distance greater than 0.5. Therefore, no data points will be removed from the data set for reason of being an outlier.  
@@ -818,8 +821,9 @@ From the model above, no data points have a Cook's Distance greater than 1, and 
 Plotting residuals vs. fitted values to see if the error terms look independent from each other:
 ```{r}
 ggplot(gq2_cases_intermod_reduced, aes(x=.fitted, y=.resid)) +
-geom_point() + geom_smooth()+
-geom_hline(yintercept = 0)
+geom_point() + geom_smooth() +
+geom_hline(yintercept = 0) + 
+ggtitle('Figure 14: Residuals vs Predicted Values for Daily COVID-19 Cases Model')
 ```
 
 Finally, in the plot above, it appears that the residuals are relatively evenly distributed, meaning that the residuals are independent from each other. There is, once again, a potential funnel-shape to the data points, but this is inconclusive based on the available information.  
@@ -836,6 +840,7 @@ count(!is.na(covid_data$new_cases_smoothed[covid_data$new_cases_smoothed < 0]))
 We get no rows where new cases is less than 0, so we can continue with the Box-Cox transformation.
 
 ```{r}
+print('Figure 15: Box-Cox Lambda Estimation for Daily COVID-19 Cases Model')
 bc=boxcox(gq2_cases_intermod_reduced,lambda=seq(-1,1))
 bestlambda=bc$x[which(bc$y==max(bc$y))]
 bestlambda
@@ -966,7 +971,8 @@ Next, we attempted to check whether any higher-order terms were warranted in the
 ```{r}
 pairs(~ new_deaths_smoothed + reproduction_rate + new_tests_smoothed + 
                       positive_rate + new_vaccinations_smoothed + new_people_vaccinated_smoothed +
-                      stringency_index + icu_patients, data=covid_data)
+                      stringency_index + icu_patients, data=covid_data) + 
+    title('Figure 16: Pairwise Correlations for Terms in Daily COVID-19 Deaths Model')
 ```
 The independent variables which appear to have the most obviously curvilinear relationships with 'new_deaths_smoothed' are 'reproduction_rate' and 'positive_rate'. Thus, we attempted adding a higher-order term for either variable to determine whether it results in a better-fitting model to the data. However, it is important to note that the model already included many parameters. In order to avoid over-fitting, we determined that we would only add higher-order terms if they contributed significantly to the proportion of variance in the data explained by the model or greatly reduced the model's RMSE.  
 
@@ -1057,7 +1063,8 @@ Plotting a Q-Q plot:
 ```{r}
 ggplot(gq2_deaths_intermod_reduced, aes(sample=gq2_deaths_intermod_reduced$residuals)) +
 stat_qq() +
-stat_qq_line()
+stat_qq_line() + 
+ggtitle('Figure 17: Normal Q-Q Plot of Residuals for Daily COVID-19 Deaths Model')
 ```
 
 From the output of our test, we get a p-value of 0.00000000000000022 which is less than 0.05. P-value < $\alpha$; therefore, we can reject the null hypothesis that our sample data is significantly normally distributed and conclude with a significance level of 0.05 that our sample data is not normally distributed. This means that there is a problem with the normality assumption. This result is reflected in the Q-Q plot as well, in which one can observe that the residuals deviate increasingly far from the diagonal line of normality as values fall further from 0.  
@@ -1085,7 +1092,8 @@ Next, we tested for linearity using a residuals vs predicted $\hat{Y}$ plot:
 ```{r}
 ggplot(gq2_deaths_intermod_reduced, aes(x=.fitted, y=.resid)) +
 geom_point() + geom_smooth() +
-geom_hline(yintercept = 0)
+geom_hline(yintercept = 0) + 
+  ggtitle('Figure 18: Plot of Residuals vs. Fitted Values for Daily COVID-19 Deaths Model')
 ```
 
 In the plot above, there does not appear to be a discernible pattern between the fitted and residual values beyond fitted values of 0 (keeping in mind that fitted values below 0 are illogical, as the variable being predicted is the daily number of deaths occurring due to COVID-19, which cannot be negative). Therefore, the linearity assumption is satisfied.  
@@ -1096,7 +1104,8 @@ In the plot above, there does not appear to be a discernible pattern between the
 We checked for outliers in the model by using Cook's Distance, as visualized in a plot of Residuals vs. Leverage. We determined that any data points with a Cook's Distance greater than 1 should be removed from the model.  
 
 ```{r}
-plot(gq2_deaths_intermod_reduced,which=5)
+plot(gq2_deaths_intermod_reduced,which=5) + 
+  title('Figure 19: Plot of Residuals vs. Leverage Values for Daily COVID-19 Deaths Model')
 ```
 
 From the model above, no data points have a Cook's Distance greater than even 0.5. Therefore, no data points will be removed from the data set for reason of being an outlier.  
@@ -1108,7 +1117,8 @@ Plotting residuals vs. fitted values to see if the error terms look independent 
 ```{r}
 ggplot(gq2_deaths_intermod_reduced, aes(x=.fitted, y=.resid)) +
 geom_point() + geom_smooth()+
-geom_hline(yintercept = 0)
+geom_hline(yintercept = 0) + 
+ggtitle('Figure 20: Plot of Residuals vs. Fitted Values for Daily COVID-19 Deaths Model')
 ```
 
 Once again, the plot above does not exhibit any obvious pattern between residuals and fitted data. As such, the errors are independent of one another, allowing us to infer that the independence assumption is satisfied for this model.  
@@ -1122,14 +1132,7 @@ First, we confirmed that our response variable is always positive.
 count(!is.na(covid_data$new_deaths_smoothed[covid_data$new_deaths_smoothed < 0]))
 ```
 
-We get no rows where new deaths is less than 0, so we can continue with the Box-Cox transformation.
-
-```{r}
-bc=boxcox(gq2_deaths_intermod_reduced,lambda=seq(-1,1))
-bestlambda=bc$x[which(bc$y==max(bc$y))]
-bestlambda
-```
-When attempting to conduct a Box Cox transformation, we received an error saying "response variable must be positive", despite having confirmed previously that the response variable is never less than 0 (see above). After researching this issue, we found that we could have used the Yeo-Johnson transformation; however, this is beyond the scope of this course, so we decided not to do it.  
+We get no rows where new deaths is less than 0, so we can continue with the Box-Cox transformation. However, when attempting to conduct a Box-Cox transformation, we received an error saying "response variable must be positive", despite having confirmed that the response variable is never less than 0. After researching this issue, we found that we could have used the Yeo-Johnson transformation; however, this is beyond the scope of this course, so we decided not to do it.  
 
 For this reason, we decided to declare the previously constructed model as the final model for daily new deaths, despite its violation of the assumptions of homoscedasticity and normality. It is important to note, therefore, that the results of the model are not necessarily trustworthy. The final model is:  
 
@@ -1146,7 +1149,81 @@ $\widehat{New Deaths} = 58.4964 - 35.3352 X_{reproduction.rate} + 0.0004054 X_{n
 ### Prediction
 
 
-## Question 2
+## Results for Question 2
+
+### Daily Cases Model
+
+In building a model for the daily COVID-19 cases observed in a country based on daily-reported COVID-19-related data in countries around the world (the Daily Cases Model), we considered the following variables as independent variables:  
+    - reproduction_rate;  
+    - new_tests_smoothed;  
+    - positive_rate;  
+    - new_vaccinations_smoothed;  
+    - new_people_vaccinated_smoothed;  
+    - stringency_index;  
+    - hosp_patients; and  
+    - icu_patients.  
+
+To check for multicollinearity, we determined the VIF for all of the considered variables, finding that both the hosp_patients and icu_patients variables had VIF > 10. When removing either variable independently, we found that keeping hosp_patients in the model and removing icu_patients allowed for the best-fit model with all remaining predictors having VIF < 10. Thus, we moved forward with the following variables in consideration of the best-fit first-order additive model:  
+    - reproduction_rate;  
+    - new_tests_smoothed;  
+    - positive_rate;  
+    - new_vaccinations_smoothed;  
+    - new_people_vaccinated_smoothed;  
+    - stringency_index; and  
+    - hosp_patients.  
+
+To determine which variables should remain in the model, we first conducted an individual coefficients t-test with all of the variables above entered into a full linear model. This test resulted in the conclusion that each of the variables were significant at the 5% significance level, and so all variables were kept in the additive model.  
+
+Following this, all possible interaction terms were tested with individual coefficients t-tests to determine whether any such parameters should be included in the model. This resulted in all interaction terms except for positive_rate:stringency_index and reproduction_rate:positive_rate being found significant and therefore being included in the model. 
+
+At this point in model creation, the model had an $R^2_{adj}$ of 0.9918 and an RMSE of 3582, indicating that the model was extremely well-fit to the data. For this reason, and to avoid further over-fitting, no higher-order terms were attempted to fit to the model. 
+
+Before declaring the final model, the assumptions of normality, homoscedasticity, linearity, and independence were checked, and the model was additionally checked for outliers. From the tests and plots used in this section, it was determined that the model failed both the normality and homoscedasticity assumptions, while the linearity, independence, and outlier assumptions were either satisfied or inconclusive. 
+
+To rectify the problems with normaltiy and homoscedasticity, we attempted a Box-Cox transformation of the resposne variable, calculating the best lambda for this procedure (0.3939394) and applying it to the new_cases_smoothed variable when re-fitting the model. The output of this transformation, however, was a model with a remarkably lower $R^2_{adj}$ of only 0.3264. As a result, we determined that the best-fit model we would be able to put forth for daily COVID-19 cases, based on daily-reported COVID-19-related data, was:  
+
+$\widehat{New Cases} = -956.9219 - 177.4731 X_{reproduction.rate} + 0.0103 X_{new.tests.smoothed} - 782.4864 X_{positive.rate} + 0.0443 X_{new.vaccinations.smoothed} - 0.1002 X_{new.people.vaccinated.smoothed} - 35.6258 X_{stringency.index} + 1.2017 X_{hosp.patients} - 0.0028 X_{reproduction.rate:new.tests.smoothed} - 0.0114 X_{reproduction.rate:new.vaccinations.smoothed} + 0.0505 X_{reproduction.rate:new.people.vaccinated.smoothed} + 58.5161 X_{reproduction.rate:stringency.index} - 1.4194 X_{reproduction.rate:hosp.patients} + 0.9823 X_{new.tests.smoothed:positive.rate} - 0.00000001809 X_{new.tests.smoothed:new.vaccinations.smoothed} + 0.000000008441 X_{new.tests.smoothed:new.people.vaccinated.smoothed} - 0.0001008 X_{new.tests.smoothed:stringency.index} + 0.0000001965 X_{new.tests.smoothed:hosp.patients} - 0.05656 X_{positive.rate:new.vaccinations.smoothed} - 0.03826 X_{positive.rate:new.people.vaccinated.smoothed} + 2.0004 X_{positive.rate:hosp.patients} + 0.000000005571 X_{new.vaccinations.smoothed:new.people.vaccinated.smoothed} - 0.0004916 X_{new.vaccinations.smoothed:stringency.index} + 0.0000005381 X_{new.vaccinations.smoothed:hosp.patients} + 0.0009311 X_{new.people.vaccinated.smoothed:stringency.index} - 0.0000007765 X_{new.people.vaccinated.smoothed:hosp.patients} - 0.002075 X_{stringency.index:hosp.patients}$  
+
+#### Prediction of Daily Cases
+
+
+### Daily Deaths Model
+
+In building a model for the daily COVID-19 deaths observed in a country based on daily-reported COVID-19-related data in countries around the world (the Daily Deaths Model), we considered the following variables as predictors:  
+    - reproduction_rate;  
+    - new_tests_smoothed;  
+    - positive_rate;  
+    - new_vaccinations_smoothed;  
+    - new_people_vaccinated_smoothed;  
+    - stringency_index;  
+    - hosp_patients; and  
+    - icu_patients.  
+
+To check for multicollinearity, we determined the VIF for all of the considered variables, finding that both the hosp_patients and icu_patients variables had VIF > 10. We removed either variable independently and re-fit the model, only to find that neither one produced an obviously better-fit model to the data. Therefore, we decided to remove the variable with the higher VIF, which was hops_patients. As a result, we moved forward with the following variables:  
+    - reproduction_rate;  
+    - new_tests_smoothed;  
+    - positive_rate;  
+    - new_vaccinations_smoothed;  
+    - new_people_vaccinated_smoothed;  
+    - stringency_index; and  
+    - icu_patients.  
+
+To determine which variables should remain in the model, we first conducted an individual coefficients t-test with all of the variables above entered into a full linear model. We found from this test that each of the variables were significant at the 5% significance level, and so all variables were kept in the additive model.  
+
+Following this, all possible interaction terms were tested with individual coefficients t-tests to determine whether any interactive parameters should be included in the model. This resulted in all interaction terms except for positive_rate:new_vaccinations_smoothed and reproduction_rate:positive_rate being found significant and therefore being included in the model. 
+
+At this point in model creation, the model had an $R^2_{adj}$ of 0.9197 and an RMSE of 85.25, indicating that the model was very well-fit to the data. 
+
+For this model, we decided to check the pairwise scatter plots for the independent variables with the dependent variable to determine whether any of their relationships were obviously curvilinear and warranted checking a hgher-order term. We found that the 'reproduction_rate' and 'positive_rate' variables had curvilinear relationships with 'new_deaths_smoothed', and re-fit models with second-order terms for these variables included. However, neither of these models resulted in significance benefits to the model's fit of the data. Thus, higher-order terms were abandoned in favour of avoiding over-fitting the model.  
+
+Before declaring the final model, the assumptions of normality, homoscedasticity, linearity, and independence were checked, and the model was additionally checked for outliers. From the tests and plots used in this section, it was determined that the model failed both the normality and homoscedasticity assumptions, while the linearity, independence, and outlier assumptions were all satisfied.   
+
+To rectify the problems with normality and homoscedasticity, we attempted a Box-Cox transformation of the response variable, but received only a warning from R that the response variable was not always positive (despite checking this requirement previously). Because the workaround for this issue goes beyond the scope of this course, and we already had a model which explained over 90% of the variance of the data, accounting for the number of variables in the model, we decided that we would declare our final model. The best-fit model for daily COVID-19 deaths, based on daily-reported COVID-19-related data, was:  
+
+$\widehat{New Deaths} = 58.4964 - 35.3352 X_{reproduction.rate} + 0.0004054 X_{new.tests.smoothed} - 100.6623 X_{positive.rate} - 0.000004938 X_{new.vaccinations.smoothed} - 0.001109 X_{new.people.vaccinated.smoothed} - 0.8754 X_{stringency.index} + 0.1136 X_{icu.patients} - 0.0002561 X_{reproduction.rate:new.tests.smoothed} + 0.0005209 X_{reproduction.rate:new.vaccinations.smoothed} - 0.0006226 X_{reproduction.rate:new.people.vaccinated.smoothed} + 0.4797 X_{reproduction.rate:new.people.vaccinated.smoothed} - 0.09270 X_{reproduction.rate:icu.patients} + 0.0007177 X_{new.tests.smoothed:positive.rate} - 0.00000000006414 X_{new.tests.smoothed:new.vaccinations.smoothed} + 0.0000000008364 X_{new.tests.smoothed:new.people.vaccinated.smoothed} - 0.000001561 X_{new.tests.smoothed:stringency.index} + 0.000000008622 X_{new.tests.smoothed:icu.patients} + 0.003121 X_{positive.rate:new.people.vaccinated.smoothed} + 3.0156 X_{positive.rate:stringency.index} - 0.1275 X_{positive.rate:icu.patients} - 0.0000000001269 x_{new.vaccinations.smoothed:new.people.vaccinated.smoothed} - 0.00001073 X_{new.vaccinations.smoothed:stringency.index} + 0.00000001979 X_{new.vaccinations.smoothed:icu.patients} + 0.00002719 X_{new.people.vaccinated.smoothed:stringency.index} - 0.00000005890 X_{new.people.vaccinated.smoothed:icu.patients} + 0.0008637 X_{stringency.index:icu.patients}$  
+
+
+#### Prediction of Daily Deaths
 
 
 \newpage
