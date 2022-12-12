@@ -305,7 +305,7 @@ As sometimes the relationship between the independent variables and the dependen
 ```{r}
 covid_higher_order <-data.frame(covid_agg$new_cases, covid_agg$population, covid_agg$aged_65_older, covid_agg$gdp_per_capita)
 
-ggpairs(covid_higher_order, lower = list(continuous="smooth_loess", combo="facethist", discrete="facetbar", na="na"))
+ggpairs(covid_higher_order, lower = list(continuous="smooth_loess", combo="facethist", discrete="facetbar", na="na")) + ggtitle('Figure 1: Correlation for terms present in Model Average Daily Cases')
 ```
 
 We can observe a curvature relationship between population and new_cases, as this term is the one with the highest correlation coefficient, we will include a higher order term to try to improve our model. 
@@ -344,7 +344,7 @@ shapiro.test(residuals(model_cases_interactions_2))
 
 Plotting a Q-Q plot:
 ```{r}
-ggplot(model_cases_interactions_2, aes(sample=model_cases_interactions_2$residuals)) + stat_qq(color='blue') + stat_qq_line(color='red') + ggtitle('Q-Q plot: Checking Normality Assumption for New Cases Model')
+ggplot(model_cases_interactions_2, aes(sample=model_cases_interactions_2$residuals)) + stat_qq(color='blue') + stat_qq_line(color='red') + ggtitle('Figure 2: Q-Q Plot, Normality Assumption for Average Daily Covid-19 Cases')
 ```
 
 From the output of our test, we get a p-value of 0.00000000000000022 which is less than 0.05. This means we can reject our null hypothesis that our sample data is significantly normally distributed and conclude with a significance level of 0.05 that our sample data is not normally distributed. This means that there is a problem with the normality assumption.
@@ -370,9 +370,8 @@ From the output of our test, we get a p-value of 0.0008982 which is greater than
 
 Testing for linearity using a residuals vs predicted $\hat{Y}$ plot:
 ```{r}
-ggplot(model_cases_interactions_2, aes(x=.fitted, y=.resid)) + geom_point() + geom_smooth()+ geom_hline(yintercept = 0) + ggtitle('residuals vs predicted: Checking Linearity Assumption for New Cases Model')
+ggplot(model_cases_interactions_2, aes(x=.fitted, y=.resid)) + geom_point() + geom_smooth()+ geom_hline(yintercept = 0) + ggtitle('Figure 3: Residuals vs Predicted for Average Daily Covid-19 Cases')
 ```
-
 Looking at the plot above, our model is likely not linear. However, it is not conclusive as just looking at a graph can be subjective.
 
 
@@ -383,7 +382,8 @@ Testing for outliers using Cook´s distance:
 covid_agg[cooks.distance(model_cases_interactions_2)>1,]
 ```
 ```{r}
-plot(model_cases_interactions_2, which=5)
+plot(model_cases_interactions_2, which=5) + title('Figure 3: Hook´s Distance Plot for Average Daily Covid-19 Cases
+                                                  ')
 ```
 From our output, we do not have Outliers in our dataset that affect our results, no further action needed.
 
@@ -393,7 +393,7 @@ From our output, we do not have Outliers in our dataset that affect our results,
 
 Plotting residuals vs. fitted values to see if the error terms look independent from each other:
 ```{r}
-ggplot(model_cases_interactions_2, aes(x=.fitted, y=.resid)) + geom_point() + geom_smooth()+ geom_hline(yintercept = 0) + ggtitle('residuals vs. fitted: Checking Independant Errors Assumption for New Cases Model')
+ggplot(model_cases_interactions_2, aes(x=.fitted, y=.resid)) + geom_point() + geom_smooth()+ geom_hline(yintercept = 0) + ggtitle('Figure 4: Rresiduals vs. Fitted Values for Average Daily Covid-19 Cases')
 ```
 Looking at the plot above, it seems that the residuals do not seem to be  evenly distributed, meaning that the residuals are not independent from each other. However, it is not conclusive as just looking at a graph can be subjective.
 
@@ -486,7 +486,7 @@ We would like to try a higher order term to see if we can improve our Adjusted R
 ```{r}
 covid_higher_order <- data.frame(covid_agg$new_deaths, covid_agg$population, covid_agg$human_development_index)
 
-ggpairs(covid_higher_order, lower = list(continuous="smooth_loess", combo="facethist", discrete="facetbar", na="na"))
+ggpairs(covid_higher_order, lower = list(continuous="smooth_loess", combo="facethist", discrete="facetbar", na="na")) + ggtitle('Figure 5: Correlation for terms present in Model Average Daily Deaths')
 ```
 
 Right away we can observe that there is a curvature relationship between population and new_deaths, for that reason we decided to try a square term to see if the model behaves better. 
@@ -525,7 +525,7 @@ shapiro.test(residuals(model_deaths_interactions))
 
 Plotting a Q-Q plot:
 ```{r}
-ggplot(model_deaths_interactions, aes(sample=model_deaths_interactions$residuals)) + stat_qq(color='blue') + stat_qq_line(color='red') + ggtitle('Q-Q plot: Checking Normality Assumption for New Deaths Model')
+ggplot(model_deaths_interactions, aes(sample=model_deaths_interactions$residuals)) + stat_qq(color='blue') + stat_qq_line(color='red') + ggtitle('Figure 6: Q-Q plot for Average Daily Covid-19 Deaths')
 ```
 
 From the output of our test, we get a p-value of 0.00000000000000022 which is lower than 0.05. This means we reject and conclude with a significance level of 0.05 that our sample data is not normally distributed. This means that there is a problem with the normality assumption.
@@ -551,9 +551,8 @@ From the output of our test, we get a p-value of 0.466 which is more than 0.05. 
 
 Testing for linearity using a residuals vs predicted $\hat{Y}$ plot:
 ```{r}
-ggplot(model_deaths_interactions, aes(x=.fitted, y=.resid)) + geom_point() + geom_smooth()+ geom_hline(yintercept = 0) + ggtitle('residuals vs predicted: Checking Linearity Assumption for New Deaths Model')
+ggplot(model_deaths_interactions, aes(x=.fitted, y=.resid)) + geom_point() + geom_smooth()+ geom_hline(yintercept = 0) + ggtitle('Figure 7: Residuals vs Rredicted Values for Average Daily Covid-19 Deaths')
 ```
-
 Looking at the plot above, our model does not seem to be linear.
 
 
@@ -565,7 +564,8 @@ covid_agg[cooks.distance(model_deaths_interactions)>1,]
 ```
 
 ```{r}
-plot(model_deaths_revised,which=5)
+plot(model_deaths_revised,which=5) + title('Figure 8: Residuals vs Leverage Plot for Average Daily Covid-19 Deaths
+                                           ')
 ```
 
 From our output, there seems to be two data points, row 88 and 207 withCook´s Distance over 1, we will delete them and retrain the model afterwards to see if we can find improvements.
@@ -586,10 +586,13 @@ A value of VIF close to or below 1 means that there is no multicollinearity. Con
 
 Plotting residuals vs. fitted values to see if the error terms look independent from each other:
 ```{r}
-ggplot(model_deaths_interactions, aes(x=.fitted, y=.resid)) + geom_point() + geom_smooth()+ geom_hline(yintercept = 0) + ggtitle('residuals vs. fitted values: Checking Independant Errors Assumption for New Deaths Model')
+ggplot(model_deaths_interactions, aes(x=.fitted, y=.resid)) + geom_point() + geom_smooth()+ geom_hline(yintercept = 0) + ggtitle('Figure 9: Residuals vs Fitted Values for Average Daily Covid-19 Deaths')
 ```
-
 Looking at the plot above, it seems that the residuals are not evenly distributed, meaning that the residuals are not independent from each other.
+
+
+#### Final Model
+As we shown, our Final Model did not pass the following assumptions: Homoscedasticity, Normality, Independant Errors and Linearity; only passing the Multicolinearity one. When using Box Cox transformation we got an error saying that *response variable must be positive*, looking online we could have used the Yeo-Johnson transformation, however it is outside of the scope of the course so we did not do it. 
 
 We will retrain our final model with the dataset without interactions. 
 
@@ -599,7 +602,7 @@ model_deaths_final = lm(new_deaths ~ (population + human_development_index)^2, d
 summary(model_deaths_final)
 ```
 
-Our final model for avg new dailt deaths due to Covid-19 is:\
+Our final model for average new daily deaths due to Covid-19 is:\
 $\widehat{y}_{new.deaths} = 0.8449 - 0.000004976 x_{population} + 10.9375 x_{human.development.index} + 0.000008337 x_{population} x_{human.development.index}$\
 More important our Adjusted R Squared is now 0.5141.
 
@@ -1136,6 +1139,12 @@ $\widehat{New Deaths} = 58.4964 - 35.3352 X_{reproduction.rate} + 0.0004054 X_{n
 # Results
 
 ## Question 1
+
+### Summary
+
+
+### Prediction
+
 
 ## Question 2
 
