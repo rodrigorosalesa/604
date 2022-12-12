@@ -203,15 +203,12 @@ covid[is.na(covid)] = 0
     - _cardiovasc_death_rate_: The death rate caused by cardiovascular disease.
     - _diabetes_prevalence_: The number of the population per million that is diagnosed with diabetes.
     - _life_expectancy_: The life expectancy of the population of a country.
-    - _reproduction_rate_: The rate of reproduction of the population of a country.
     - _smokers_: The number of the population per million that smokes cigarettes.
     
 
 3) COVID metrics
 
     - _stringency_index_: A measure of how stringent the policies related to controlling the spread of COVID is.
-    - _hosp_patients_: The number of people hospitalized due to COVID.
-    - _new_tests_: The number of new COVID tests conducted in a day.
 
 
 ## Data Preparation 
@@ -240,45 +237,45 @@ It is important to state that for all the statistical tests that we will perform
 
 ### New Cases Model
 
-We started by defining our full model, including all the variables that make senses to predict New Covid-19 Cases for a specific country. Using the **summary()** function we are able to see the most important information about our model. 
+We started by defining our full model with the function **lm()**, including all the variables that make senses to predict New Covid-19 Cases for a specific country. Using the **summary()** function we are able to see the most important information about our model. 
 ```{r}
-model_cases_full = lm(new_cases ~ aged_65_older + smokers + cardiovasc_death_rate + diabetes_prevalence + extreme_poverty + gdp_per_capita + median_age + life_expectancy + population + stringency_index + human_development_index + reproduction_rate + hosp_patients + new_tests + population_density, data=covid_agg)
+model_cases_full = lm(new_cases ~ aged_65_older + smokers + cardiovasc_death_rate + diabetes_prevalence + extreme_poverty + gdp_per_capita + median_age + life_expectancy + population + stringency_index + human_development_index + population_density, data=covid_agg)
 
 summary(model_cases_full)
 ```
 
-Using the *Step Wise Regression Procedure* to create the best fit additive model we found out that only 4 variables were significant; for these 4 terms we can reject the Null Hypothesis for the individual coefficient t test, meaning that the terms are significant and the coefficients should be different than 0. The 4 terms that passed the mentioned test are: **population **, **hosp_patients**, **life_expectancy ** and **cardiovasc_death_rate**. The term **aged_65_older** gave us a p_value of 0.07 and as it is very close to our alpha, we decided to keep it as it could be useful later on and Covid-19 affects more to people that are older.
+Using the *Step Wise Regression Procedure* to create the best fit additive model we found out that only 3 variables were significant; for these 4 terms we can reject the Null Hypothesis for the individual coefficient t test, meaning that the terms are significant and the coefficients should be different than 0. The 3 terms that passed the mentioned test are: **population **, **gdp_per_capita** and **aged_65_older**.
 
 Hypothesis Testing for Individual Coefficient t tests.\
 $H_0: \beta_i = 0$\
 $H_a: \beta_i \neq 0$\
-$(i = \text{population, hosp_patients, life_expectancy, cardiovasc_death_rate, aged_65_older})$
+$(i = \text{population, aged.65.older, gdp.per.capita})$
 
 ```{r}
 model_cases_stepwise = ols_step_both_p(model_cases_full, pent=0.1, prem=0.3, progress=TRUE)
 ```
 
 The model obtained after performing the *Step Wise Regression Procedure* is:\
-$\widehat{y}_{new.cases} = 59518.694  + 0.00003476 x_{population} + 1.8174 x_{hosp.patients} - 758.1411 x_{life.expectancy} -26.7645 x_{cardiovasc.death.rate} + 506.2606 x_{aged.65.older}$
+$\widehat{y}_{new.daily.cases} = - 3863.4429 + 0.00004794 x_{population} + 522.5716 x_{aged.65.older} + 0.0715 x_{gdp.per.capita}$
 
-Adjusted R Squared of our model is: 0.4331, meaning that the proportion of the total variation that is explained by the model is 43.31%.
+Adjusted R Squared of our model is: 0.3497, meaning that the proportion of the total variation that is explained by the model is 34.97%.
 ```{r}
-model_cases_revised = lm(new_cases ~ population + hosp_patients + life_expectancy + cardiovasc_death_rate + aged_65_older, data=covid_agg)
+model_cases_revised = lm(new_cases ~ population + aged_65_older + gdp_per_capita, data=covid_agg)
 summary(model_cases_revised)
 ```
 
 We decided to perform a global F-test to decide if the model is a better fit for the data than the null model, the mean of the dependent variable. 
 Global F-test:
 
-Null hypothesis: $H_{0}: \beta_{population}=\beta_{hosp.patients}=\beta_{life.expectancy}=\beta_{ardiovasc.death.rate}=\beta_{aged.65.older}=0$
+Null hypothesis: $H_{0}: \beta_{population}=\beta_{aged.65.older}=\beta_{gdp.per.capita}=0$
 
-Alternative hypothesis: At least one $\beta_{i} (i= population, hosp.patients, life.expectancy, cardiovasc.death.rate, aged.65.older)$ does not equal 0.
+Alternative hypothesis: At least one $\beta_{i} (i= population, aged.65.older, gdp.per.capita)$ does not equal 0.
 ```{r}
 model_cases_null <- lm(new_cases ~ 1, data=covid_agg)
 anova(model_cases_null, model_cases_revised)
 ```
 
-From the output of our global F-test, we get a p-value of 0.00000000000000022   which is less than our alpha value of 0.05 so we can reject our null hypothesis that all of our regression coefficients are equal to 0 and can conclude with a significance level of 0.05 that our model has at least one significant predictor.
+From the output of our global F-test, we get a p-value of 0.00000000000000022 which is less than our alpha value of 0.05 so we can reject our null hypothesis that all of our regression coefficients are equal to 0 and can conclude with a significance level of 0.05 that our model has at least one significant predictor.
 
 
 Using interactions terms can be a powerful way to increase the efficiency of our model as sometimes the effect of an independent variable on a dependent variable, in our case new Covid-19 cases, is not constant over all of the values of other independent variables. 
@@ -286,41 +283,51 @@ Using interactions terms can be a powerful way to increase the efficiency of our
 Hypothesis Testing for Individual Coefficient t tests.\
 $H_0: \beta_i = 0$\
 $H_a: \beta_i \neq 0$\
-$(i = \text{(population, hosp_patients, life_expectancy, cardiovasc_death_rate, aged_65_older)^2})$
+$(i = \text{(population, aged.65.older, gdp.per.capita)^2})$
 
-We failed to reject our Null Hypothesis for the interaction terms, suggesting they should not be including in our model.
+We rejected our null hypothesis for interaction terms **population:gdp_per_capita** and **aged_65_older:gdp_per_capita**, meaning that they should be including in the model.
 
 ```{r}
-model_cases_interactions = lm(new_cases ~ (population + hosp_patients + life_expectancy + cardiovasc_death_rate + aged_65_older)^2, data=covid_agg)
+model_cases_interactions = lm(new_cases ~ (population + aged_65_older + gdp_per_capita)^2, data=covid_agg)
 summary(model_cases_interactions)
 ```
 
+Here, we just created the updated interaction model with all the significant terms.
+```{r}
+model_cases_interactions_2 = lm(new_cases ~ population + aged_65_older + gdp_per_capita + population:gdp_per_capita + aged_65_older:gdp_per_capita, data=covid_agg)
+
+summary(model_cases_interactions_2)
+```
+The interaction model with the best fit is:\
+$\widehat{y}_{new.daily.cases} = - 317.9720 - 0.0000004255 x_{population} + 69.5871 x_{aged.65.older} - 0.0702 x_{gdp.per.capita} + 0.000000005053 x_{population} x_{gdp.per.capita} + 0.0100 x_{aged.65.older} x_{gdp.per.capita}$
+
 As sometimes the relationship between the independent variables and the dependent variable could not be a straight line relationship, but a curvature one, we are going to check for higher order terms to see if we can improve our model. To do this we will first see the correlation between our independent variables and the dependent variable to have a better idea on which variable to we need to check for higher order. 
 ```{r}
-covid_higher_order <-data.frame(covid_agg$new_cases, covid_agg$population, covid_agg$hosp_patients, covid_agg$aged_65_older, covid_agg$cardiovasc_death_rate)
+covid_higher_order <-data.frame(covid_agg$new_cases, covid_agg$population, covid_agg$aged_65_older, covid_agg$gdp_per_capita)
 
 ggpairs(covid_higher_order, lower = list(continuous="smooth_loess", combo="facethist", discrete="facetbar", na="na"))
 ```
 
-Right away we can observe that there is a curvature relationship between population and new_cases, as this term is the one with the highest correlation coefficient, we will include a higher order term to try to improve our model. 
+We can observe a curvature relationship between population and new_cases, as this term is the one with the highest correlation coefficient, we will include a higher order term to try to improve our model. 
 
 Hypothesis Testing for Individual Coefficient t tests.\
 $H_0: \beta_i = 0$\
 $H_a: \beta_i \neq 0$\
 $(i = \text{population^2})$
 
-We rejected the Null Hypothesis for the squared term, population, so we can include it in the model. There was an increase of 0.1272 in our Adjusted R Squared, the new value is 0.5603, meaning that we can now explain more of the variation of the dependent variable.
+We failed reject the Null Hypothesis for the squared term, population, so we will not include it in the model.
 ```{r}
-model_cases_squared = lm(new_cases ~ population + I(population^2) + hosp_patients + life_expectancy + cardiovasc_death_rate + aged_65_older, data=covid_agg)
+model_cases_squared = lm(new_cases ~ population + I(population^2) + aged_65_older + gdp_per_capita + population:gdp_per_capita + aged_65_older:gdp_per_capita, data=covid_agg)
 
 summary(model_cases_squared)
 ```
 
-We decided to stop here, as increasing for a higher power was not significant anymore. Our Best Fit Model is:\
-$\widehat{y}_{new.cases} = 38894.7949 + 0.0001509 x_{population} - 0.00000000000004036 x^2_{population} + 1.1382 x_{hops.patients} - 510.3061 x_{life.expectancy} - 25.3196 x_{cardiovasc.death.rate} + 426.1331 x_{aged.65.older}$
+Our Final Best Fit Model is:\
+$\widehat{y}_{new.daily.cases} = - 317.9720 - 0.0000004255 x_{population} + 69.5871 x_{aged.65.older} - 0.0702 x_{gdp.per.capita} + 0.000000005053 x_{population} x_{gdp.per.capita} + 0.0100 x_{aged.65.older} x_{gdp.per.capita}$\
+Our model has an Adjusted R Squared of 0.6551.
 
 
-### New Cases Assumptions 
+### New Cases Model Assumptions 
 
 #### Normality Assumption 
 
@@ -332,15 +339,15 @@ Testing for normality using the Shapiro-Wilk test:
 
 We will set the alpha value to 0.05.
 ```{r}
-shapiro.test(residuals(model_cases_squared))
+shapiro.test(residuals(model_cases_interactions_2))
 ```
 
 Plotting a Q-Q plot:
 ```{r}
-ggplot(model_cases_squared, aes(sample=model_cases_squared$residuals)) + stat_qq(color='blue') + stat_qq_line(color='red') + ggtitle('Q-Q plot: Checking Normality Assumption for New Cases Model')
+ggplot(model_cases_interactions_2, aes(sample=model_cases_squared$residuals)) + stat_qq(color='blue') + stat_qq_line(color='red') + ggtitle('Q-Q plot: Checking Normality Assumption for New Cases Model')
 ```
 
-From the output of our test, we get a p-value of 0.00000000000000022 which is less than 0.05. This means we can  reject our null hypothesis that our sample data is significantly normally distributed and conclude with a significance level of 0.05 that our sample data is not normally distributed. This means that there is a problem with the normality assumption.
+From the output of our test, we get a p-value of 0.00000000000000022 which is less than 0.05. This means we can reject our null hypothesis that our sample data is significantly normally distributed and conclude with a significance level of 0.05 that our sample data is not normally distributed. This means that there is a problem with the normality assumption.
 
 
 #### Homoscedasticity Assumption
@@ -353,17 +360,17 @@ Testing for heteroscedasticity using the Breusch-Pagan test:
 
 We will set the alpha value to 0.05.
 ```{r}
-bptest(model_cases_squared)
+bptest(model_cases_interactions_2)
 ```
 
-From the output of our test, we get a p-value of 0.00000000000000022 which is greater than 0.05. This means we fail to reject the null hypothesis that there is homoscedasticity and conclude with a significance level of 0.05 that our model is not homoscedastic. This means that there is no problem with the homoscedasticity assumption. 
+From the output of our test, we get a p-value of 0.00000000000000022 which is greater than 0.05. This means we rejected the null hypothesis and conclude with a significance level of 0.05 that our model is homoscedastic. This means that there is a problem with the homoscedasticity assumption. 
 
 
 #### Linearity Assumption 
 
 Testing for linearity using a residuals vs predicted $\hat{Y}$ plot:
 ```{r}
-ggplot(model_cases_squared, aes(x=.fitted, y=.resid)) + geom_point() + geom_smooth()+ geom_hline(yintercept = 0) + ggtitle('residuals vs predicted: Checking Linearity Assumption for New Cases Model')
+ggplot(model_cases_interactions_2, aes(x=.fitted, y=.resid)) + geom_point() + geom_smooth()+ geom_hline(yintercept = 0) + ggtitle('residuals vs predicted: Checking Linearity Assumption for New Cases Model')
 ```
 
 Looking at the plot above, our model is likely not linear. However, it is not conclusive as just looking at a graph can be subjective.
@@ -371,23 +378,14 @@ Looking at the plot above, our model is likely not linear. However, it is not co
 
 #### Outliers Assumption
 
-Testing for outliers using leverage:
+Testing for outliers using Cook´s distance:
 ```{r}
-lev=hatvalues(model_cases_squared)
-p = length(coef(model_cases_squared))
-n = nrow(covid_agg)
-outlier3p = lev[lev>(3*p/n)]
-outlier3p
+covid_agg[cooks.distance(model_cases_interactions_2)>1,]
 ```
-
 ```{r}
-plot(model_cases_squared, which=5)
+plot(model_cases_interactions_2, which=5)
 ```
-
-From our output, we have influential outliers in our data at rows 72, 90, 95, 110, 121, 122, 225 and 227. Removing these rows:
-```{r}
-covid_agg2 <- covid_agg[-c(72,90,95,110,121,122,225,227),]
-```
+From our output, we do not have Outliers in our dataset that affect our results, no further action needed.
 
 
 
@@ -395,57 +393,67 @@ covid_agg2 <- covid_agg[-c(72,90,95,110,121,122,225,227),]
 
 Plotting residuals vs. fitted values to see if the error terms look independent from each other:
 ```{r}
-ggplot(model_cases_squared, aes(x=.fitted, y=.resid)) + geom_point() + geom_smooth()+ geom_hline(yintercept = 0) + ggtitle('residuals vs. fitted: Checking Independant Errors Assumption for New Cases Model')
+ggplot(model_cases_interactions_2, aes(x=.fitted, y=.resid)) + geom_point() + geom_smooth()+ geom_hline(yintercept = 0) + ggtitle('residuals vs. fitted: Checking Independant Errors Assumption for New Cases Model')
 ```
-
 Looking at the plot above, it seems that the residuals do not seem to be  evenly distributed, meaning that the residuals are not independent from each other. However, it is not conclusive as just looking at a graph can be subjective.
 
 
-#### Final Model
-We will create a final model using the new dataset with no outliers to see if there is an improvement in our model.
+#### Multicolinearity
+The Multicollinearity assumption checks if two or more terms in our model provide redundant information about the independent variable. we will use the test Variance Inflation Factors (VIF). 
 ```{r}
-model_cases_final = lm(new_cases ~ population + I(population^2) + hosp_patients + life_expectancy + cardiovasc_death_rate + aged_65_older, data=covid_agg2)
+imcdiag(model_cases_interactions_2, method='VIF')
+```
+A value in VIF between 1 and 5 suggest that there is a moderate multicollinearity, but it is not severe enough to warrant corrective measures. Concluding that our model passed this assumption.
+
+
+
+#### Final Model
+As we shown, our Final Model did not pass the following assumptions: Homoscedasticity, Normality, Independant Errors and Linearity; only passing the Multicolinearity one. When using Box Cox transformation we got an error saying that *response variable must be positive*, looking online we could have used the Yeo-Johnson transformation, however it is outside of the scope of the course so we did not do it. 
+
+The final model to predict the average new daily Covid-19 cases for a specific country using is:\
+$\widehat{y}_{new.daily.cases} = - 317.9720 - 0.0000004255 x_{population} + 69.5871 x_{aged.65.older} - 0.0702 x_{gdp.per.capita} + 0.000000005053 x_{population} x_{gdp.per.capita} + 0.0100 x_{aged.65.older} x_{gdp.per.capita}$\
+Our model has an Adjusted R Squared of 0.6551.
+```{r}
+model_cases_final = lm(new_cases ~ population + aged_65_older + gdp_per_capita + population:gdp_per_capita + aged_65_older:gdp_per_capita, data=covid_agg)
 
 summary(model_cases_final)
 ```
 
-Our new model without outliers has an adjusted R-squared value of 0.6745. This means it explains 67.45% of variance in new_cases. The final model is:\
-$\widehat{y}_{new.cases} = 75423.6599 + 0.0001757 x_{population} - 0.00000000000005242 x^2_{population} + 0.9763 x_{hops.patients} - 984.6061 x_{life.expectancy} - 40.0295 x_{cardiovasc.death.rate} + 636.6092 x_{aged.65.older}$
 
 
 ### New Deaths Model
 
-For the New Deaths model we followed the same procedure. We started by defining our full model, including all the variables that make senses to predict New Covid-19 Deaths for a specific country. Using the **summary()** function we are able to see the most important information about our model.
+For the New Deaths model we followed the same procedure. We started by defining our full model, with **lm()**, including all the variables that make senses to predict New Covid-19 Deaths for a specific country. Using the **summary()** function we are able to see the most important information about our model.
 ```{r}
-model_deaths_full = lm(new_deaths ~ aged_65_older + smokers + cardiovasc_death_rate + diabetes_prevalence + extreme_poverty + gdp_per_capita + median_age + life_expectancy + population + stringency_index + human_development_index + reproduction_rate + hosp_patients + new_tests + population_density, data=covid_agg)
+model_deaths_full = lm(new_deaths ~ aged_65_older + smokers + cardiovasc_death_rate + diabetes_prevalence + extreme_poverty + gdp_per_capita + median_age + life_expectancy + population + stringency_index + human_development_index + population_density, data=covid_agg)
 
 summary(model_deaths_full)
 ```
 
-Using the *Step Wise Regression Procedure* to create the best fit additive model we found out that only 3 variables were significant; for these 3 terms we can reject reject the Null Hypothesis for the individual coefficient t test, meaning that the terms are significant and the coefficients should be different than 0. The 3 terms that passed the mentioned test are: **population**, **hosp_patients** and **life_expectancy**. The term **extreme_poverty** gave us a p_value of 0.056 which is close to our alpha, we decided to keep it as it could be useful later on.
+Using the *Step Wise Regression Procedure* to create the best fit additive model we found out that only 2 variables were significant; for these 3 terms we can reject reject the Null Hypothesis for the individual coefficient t test, meaning that the terms are significant and the coefficients should be different than 0. The 3 terms that passed the mentioned test are: **population** and **human_development_index**. 
 
 Hypothesis Testing for Individual Coefficient t tests.\
 $H_0: \beta_i = 0$\
 $H_a: \beta_i \neq 0$\
-$(i = \text{population, hosp_patients, life_expectancy, extreme_povery})$
+$(i = \text{population, human.development.index})$
 ```{r}
 model_deaths_stepwise = ols_step_both_p(model_deaths_full, pent=0.1, prem=0.3, progress=TRUE)
 ```
 
 The model obtained after performing the *Step Wise Regression Procedure* is:\
-$\widehat{y}_{new.deaths} = 336.5827 + 0.0000005644 x_{population} - 0.0190 x_{hosp.patients} - 4.3262 x_{life.expectancy} - 1.6116 x_{extreme.poverty}$
+$\widehat{y}_{new.deaths} = - 125.4150 + 0.0000005815 x_{population} - 198.6108 x_{human.development.index}$
 
 Adjusted R Squared of our model is: 0.6635, meaning that the proportion of the total variation that is explained by the model is 66.35%.
 ```{r}
-model_deaths_revised = lm(new_deaths ~ population + hosp_patients + life_expectancy + extreme_poverty, data=covid_agg)
+model_deaths_revised = lm(new_deaths ~ population + human_development_index, data=covid_agg)
 summary(model_deaths_revised)
 ```
 
 Global F-test:
 
-Null hypothesis: $H_{0}: \beta_{population}=\beta_{hosp_patients}=\beta_{life_expectancy}=0$
+Null hypothesis: $H_{0}: \beta_{population}=\beta_{human.development.index}=0$
 
-Alternative hypothesis: At least one $\beta_{i} (i= population, hosp_patients, life_expectancy, extreme_povery)$ does not equal 0.
+Alternative hypothesis: At least one $\beta_{i} (i= population, human.development.index)$ does not equal 0.
 
 We will set the alpha value to 0.05.
 ```{r}
@@ -453,37 +461,34 @@ model_deaths_null <- lm(new_deaths ~ 1, data=covid_agg)
 anova(model_deaths_null, model_deaths_revised)
 ```
 
-From the output of our global F-test, we get a p-value of 0.00003089  which is less than our alpha value of 0.05 so we can reject our null hypothesis that all of our regression coefficients are equal to 0 and can conclude with a significance level of 0.05 that our model has at least one significant predictor.
+From the output of our global F-test, we get a p-value of 0.000000000000001914  which is less than our alpha value of 0.05 so we can reject our null hypothesis that all of our regression coefficients are equal to 0 and can conclude with a significance level of 0.05 that our model has at least one significant predictor.
 
 Using interactions terms can be a powerful way to increase the efficiency of our model as sometimes the effect of an independent variable on a dependent variable, in our case new Covid-19 deaths, is not constant over all of the values of the other independent variables. As population is on our terms we decided to include interactions terms as depending on the total population of a country all the other variables could change.
 
 Hypothesis Testing for Individual Coefficient t tests.\
 $H_0: \beta_i = 0$\
 $H_a: \beta_i \neq 0$\
-$(i = \text{(population, hosp_patients, life_expectancy, extreme_povery)^2})$
+$(i = \text{(population, human_development_index)^2})$
 
-We failed to reject our Null Hypothesis for all of the every interaction term, but 2, suggesting they should not be included in our model. For **population:life_expectancy** and **population:extreme_poverty** we rejected our Null Hyphothesis and will be included in the model
+We rejected our Null Hypothesis for the interaction term **population:human_development_index** so we will include them in the model.
 ```{r}
-model_deaths_interactions = lm(new_deaths ~ (population + hosp_patients + life_expectancy + extreme_poverty)^2, data=covid_agg)
+model_deaths_interactions = lm(new_deaths ~ (population + human_development_index)^2, data=covid_agg)
 summary(model_deaths_interactions)
 ```
 Te interaction model is:
-$\widehat{y}_{new.deaths} = 294.5097 + 0.0000005921 x_{population} + 0.0135 x_{hosp.patients} - 3.9311 x_{life.expectancy} - 0.5999 x_{extreme.poverty} + 0.00000001040 x_{population} x_{life.expectancy} - 0.00000004503 x_{population} x_{extreme.poverty}$
-```{r}
-model_deaths_interactions_2 = lm(new_deaths ~ population + hosp_patients + life_expectancy + extreme_poverty + population:life_expectancy + population:extreme_poverty, data=covid_agg)
-summary(model_deaths_interactions_2)
-```
+$\widehat{y}_{new.deaths} = 0.8449 - 0.000004976 x_{population} + 10.9375 x_{human.development.index} + 0.000008337 x_{population} x_{human.development.index}$
+More important our Adjusted R Squared is now 0.5141, which almost the double of what it was before.
 
 
 We would like to try a higher order term to see if we can improve our Adjusted R Squared, as some of the relations with the dependent variable could be curvature instead of linear. To check this relations we will use the ggpairs to plot the correlation between the independent variables and the dependent variables. 
 ```{r}
-covid_higher_order <- data.frame(covid_agg$new_deaths, covid_agg$population, covid_agg$hosp_patients, covid_agg$life_expectancy, covid_agg$extreme_poverty )
+covid_higher_order <- data.frame(covid_agg$new_deaths, covid_agg$population, covid_agg$human_development_index)
 
 ggpairs(covid_higher_order, lower = list(continuous="smooth_loess", combo="facethist", discrete="facetbar", na="na"))
 ```
 
 Right away we can observe that there is a curvature relationship between population and new_deaths, for that reason we decided to try a square term to see if the model behaves better. 
-
+---------------------------------------------------------------------------------------------------------------------
 Hypothesis Testing for Individual Coefficient t tests.\
 $H_0: \beta_i = 0$\
 $H_a: \beta_i \neq 0$\
@@ -491,7 +496,7 @@ $(i = \text{population^2})$
 
 We rejected the Null Hypothesis for the squared term, population, so we can include it in the model. There was an increase of 0.164 in our Adjusted R Squared, the new value is 0.8376, meaning that we can now explain more of the variation of the dependent variable. We decided to stop here as we don´t want to to create a model that is overfited. 
 ```{r}
-model_deaths_squared = lm(new_deaths ~ population + I(population^2) + hosp_patients + life_expectancy + extreme_poverty + population:life_expectancy + population:extreme_poverty, data=covid_agg)
+model_deaths_squared = lm(new_deaths ~ population + I(population^2) + human_development_index, data=covid_agg)
 
 summary(model_deaths_squared)
 ```
