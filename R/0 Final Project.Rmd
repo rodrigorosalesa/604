@@ -344,7 +344,7 @@ shapiro.test(residuals(model_cases_interactions_2))
 
 Plotting a Q-Q plot:
 ```{r}
-ggplot(model_cases_interactions_2, aes(sample=model_cases_squared$residuals)) + stat_qq(color='blue') + stat_qq_line(color='red') + ggtitle('Q-Q plot: Checking Normality Assumption for New Cases Model')
+ggplot(model_cases_interactions_2, aes(sample=model_cases_interactions_2$residuals)) + stat_qq(color='blue') + stat_qq_line(color='red') + ggtitle('Q-Q plot: Checking Normality Assumption for New Cases Model')
 ```
 
 From the output of our test, we get a p-value of 0.00000000000000022 which is less than 0.05. This means we can reject our null hypothesis that our sample data is significantly normally distributed and conclude with a significance level of 0.05 that our sample data is not normally distributed. This means that there is a problem with the normality assumption.
@@ -363,7 +363,7 @@ We will set the alpha value to 0.05.
 bptest(model_cases_interactions_2)
 ```
 
-From the output of our test, we get a p-value of 0.00000000000000022 which is greater than 0.05. This means we rejected the null hypothesis and conclude with a significance level of 0.05 that our model is homoscedastic. This means that there is a problem with the homoscedasticity assumption. 
+From the output of our test, we get a p-value of 0.0008982 which is greater than 0.05. This means we rejected the null hypothesis and conclude with a significance level of 0.05 that our model is heteroscedastic. This means that there is a problem with the homoscedasticity assumption. 
 
 
 #### Linearity Assumption 
@@ -413,6 +413,8 @@ As we shown, our Final Model did not pass the following assumptions: Homoscedast
 The final model to predict the average new daily Covid-19 cases for a specific country using is:\
 $\widehat{y}_{new.daily.cases} = - 317.9720 - 0.0000004255 x_{population} + 69.5871 x_{aged.65.older} - 0.0702 x_{gdp.per.capita} + 0.000000005053 x_{population} x_{gdp.per.capita} + 0.0100 x_{aged.65.older} x_{gdp.per.capita}$\
 Our model has an Adjusted R Squared of 0.6551.
+
+We decided to declare the previously constructed model as the final model for average daily new cases fo question 1, despite its violation of the assumptions. It is important to note, therefore, that the results of the model are not necessarily trustworthy.
 ```{r}
 model_cases_final = lm(new_cases ~ population + aged_65_older + gdp_per_capita + population:gdp_per_capita + aged_65_older:gdp_per_capita, data=covid_agg)
 
@@ -475,7 +477,7 @@ We rejected our Null Hypothesis for the interaction term **population:human_deve
 model_deaths_interactions = lm(new_deaths ~ (population + human_development_index)^2, data=covid_agg)
 summary(model_deaths_interactions)
 ```
-Te interaction model is:
+The interaction model is:
 $\widehat{y}_{new.deaths} = 0.8449 - 0.000004976 x_{population} + 10.9375 x_{human.development.index} + 0.000008337 x_{population} x_{human.development.index}$
 More important our Adjusted R Squared is now 0.5141, which almost the double of what it was before.
 
@@ -488,21 +490,22 @@ ggpairs(covid_higher_order, lower = list(continuous="smooth_loess", combo="facet
 ```
 
 Right away we can observe that there is a curvature relationship between population and new_deaths, for that reason we decided to try a square term to see if the model behaves better. 
----------------------------------------------------------------------------------------------------------------------
+
 Hypothesis Testing for Individual Coefficient t tests.\
 $H_0: \beta_i = 0$\
 $H_a: \beta_i \neq 0$\
 $(i = \text{population^2})$
 
-We rejected the Null Hypothesis for the squared term, population, so we can include it in the model. There was an increase of 0.164 in our Adjusted R Squared, the new value is 0.8376, meaning that we can now explain more of the variation of the dependent variable. We decided to stop here as we don´t want to to create a model that is overfited. 
+We failed reject the Null Hypothesis for the squared term, population, so we will not include it in the model.
 ```{r}
-model_deaths_squared = lm(new_deaths ~ population + I(population^2) + human_development_index, data=covid_agg)
+model_deaths_squared = lm(new_deaths ~ population + I(population^2) + human_development_index + population:human_development_index, data=covid_agg)
 
 summary(model_deaths_squared)
 ```
 
-The addition of a higher order term for population is significant. Therefore our final model is:\
-$\widehat{y}_{new.deaths} = - 240.2881 + 0.000002487 x_{population} - 0.0000000000000005892 x^2_{population} + 0.0125 x_{hosp.patients} + 3.0553 x_{life.expectancy} + 0.7139 x_{extreme.poverty} - 0.00000001249 x_{population} x_{life.expectancy} - 0.00000002041 x_{population} x_{extreme.poverty}$
+The final model for average new deaths due to covid-19 is the interaction model:\
+$\widehat{y}_{new.deaths} = 0.8449 - 0.000004976 x_{population} + 10.9375 x_{human.development.index} + 0.000008337 x_{population} x_{human.development.index}$
+
 
 
 ### Assumptions for New Deaths Model
@@ -517,15 +520,15 @@ Testing for normality using the Shapiro-Wilk test:
 
 We will set the alpha value to 0.05.
 ```{r}
-shapiro.test(residuals(model_deaths_squared))
+shapiro.test(residuals(model_deaths_interactions))
 ```
 
 Plotting a Q-Q plot:
 ```{r}
-ggplot(model_deaths_squared, aes(sample=model_deaths_revised$residuals)) + stat_qq(color='blue') + stat_qq_line(color='red') + ggtitle('Q-Q plot: Checking Normality Assumption for New Deaths Model')
+ggplot(model_deaths_interactions, aes(sample=model_deaths_interactions$residuals)) + stat_qq(color='blue') + stat_qq_line(color='red') + ggtitle('Q-Q plot: Checking Normality Assumption for New Deaths Model')
 ```
 
-From the output of our test, we get a p-value of 0.00000000000000022 which is lower than 0.05. This means we can  reject our null hypothesis that our sample data is significantly normally distributed and conclude with a significance level of 0.05 that our sample data is not normally distributed. This means that there is a problem with the normality assumption.
+From the output of our test, we get a p-value of 0.00000000000000022 which is lower than 0.05. This means we reject and conclude with a significance level of 0.05 that our sample data is not normally distributed. This means that there is a problem with the normality assumption.
 
 
 #### Homoscedasticity Assumption 
@@ -538,17 +541,17 @@ Testing for heteroscedasticity using the Breusch-Pagan test:
 
 We will set the alpha value to 0.05.
 ```{r}
-bptest(model_deaths_squared)
+bptest(model_deaths_interactions)
 ```
 
-From the output of our test, we get a p-value of 0.00000000000000022 which is less than 0.05. This means we rejected the null hypothesis that there is homoscedasticity and conclude with a significance level of 0.05 that our model has homoscedasticity. This means that there is no problem with the homoscedasticity assumption. 
+From the output of our test, we get a p-value of 0.466 which is more than 0.05. This means we failed to reject the null hypothesis that there is homoscedasticity and conclude with a significance level of 0.05 that our model has homoscedasticity. This means that there is no problem with the homoscedasticity assumption. 
 
 
 #### Linearity Assumption 
 
 Testing for linearity using a residuals vs predicted $\hat{Y}$ plot:
 ```{r}
-ggplot(model_deaths_squared, aes(x=.fitted, y=.resid)) + geom_point() + geom_smooth()+ geom_hline(yintercept = 0) + ggtitle('residuals vs predicted: Checking Linearity Assumption for New Deaths Model')
+ggplot(model_deaths_interactions, aes(x=.fitted, y=.resid)) + geom_point() + geom_smooth()+ geom_hline(yintercept = 0) + ggtitle('residuals vs predicted: Checking Linearity Assumption for New Deaths Model')
 ```
 
 Looking at the plot above, our model does not seem to be linear.
@@ -556,23 +559,18 @@ Looking at the plot above, our model does not seem to be linear.
 
 #### Outliers Assumption
 
-Testing for outliers using leverage:
+Testing for outliers using Cook´s Distance:
 ```{r}
-lev=hatvalues(model_deaths_squared)
-p = length(coef(model_deaths_squared))
-n = nrow(covid_agg)
-outlier3p = lev[lev>(3*p/n)]
-outlier3p
+covid_agg[cooks.distance(model_deaths_interactions)>1,]
 ```
 
 ```{r}
 plot(model_deaths_revised,which=5)
 ```
 
-From our output, there seems to be two data points, row 9 and 14 with a leverage greater than $3p/n$. Removing rows with influential outliers:
-
+From our output, there seems to be two data points, row 88 and 207 withCook´s Distance over 1, we will delete them and retrain the model afterwards to see if we can find improvements.
 ```{r}
-covid_agg2 <- covid_agg[-c(28,72,90,95,96,110,121,122,125,161,225,227), ]
+covid_agg2 <- covid_agg[-c(88,207), ]
 ```
 
 
@@ -580,22 +578,30 @@ covid_agg2 <- covid_agg[-c(28,72,90,95,96,110,121,122,125,161,225,227), ]
 
 Plotting residuals vs. fitted values to see if the error terms look independent from each other:
 ```{r}
-ggplot(model_deaths_revised, aes(x=.fitted, y=.resid)) + geom_point() + geom_smooth()+ geom_hline(yintercept = 0) + ggtitle('residuals vs. fitted values: Checking Independant Errors Assumption for New Deaths Model')
+ggplot(model_deaths_interactions, aes(x=.fitted, y=.resid)) + geom_point() + geom_smooth()+ geom_hline(yintercept = 0) + ggtitle('residuals vs. fitted values: Checking Independant Errors Assumption for New Deaths Model')
 ```
 
 Looking at the plot above, it seems that the residuals are not evenly distributed, meaning that the residuals are not independent from each other.
 
-Since our model passed majority of the assumptions, we will leave the model as is. 
+We will retrain our final model with the dataset without interactions. 
 
+After building the Model without outliers the R squired drop drastically so we decided to leave them in the model.
 ```{r}
-model_deaths_final<- lm(new_deaths ~ population + I(population^2) + hosp_patients + life_expectancy + extreme_poverty + population:life_expectancy + population:extreme_poverty, data=covid_agg2)
+model_deaths_final = lm(new_deaths ~ (population + human_development_index)^2, data=covid_agg2)
 summary(model_deaths_final)
 ```
 
-Our final model without any influential outliers is: 
-$\widehat{y}_{new.deaths} = - 10.6106 + 0.000002983 x_{population} - 0.000000000000000774 x^2_{population} + 0.0146 x_{hosp.patients} + 0.0414 x_{life.expectancy} - 0.3946 x_{extreme.poverty} - 0.00000002063 x_{population} x_{life.expectancy} - 0.000000004944 x_{population} x_{extreme.poverty}$
+Our final model for avg new dailt deaths due to Covid-19 is:\
+$\widehat{y}_{new.deaths} = 0.8449 - 0.000004976 x_{population} + 10.9375 x_{human.development.index} + 0.000008337 x_{population} x_{human.development.index}$\
+More important our Adjusted R Squared is now 0.5141.
 
-This model gives us an adjusted R-squared value of 0.9594. Which means out model explains 95.94% of the variance in new_deaths. This is an increase of 0.1218 from our model with the influential outliers. 
+We decided to declare the previously constructed model as the final model for average daily new cases fo question 1, despite its violation of the assumptions. It is important to note, therefore, that the results of the model are not necessarily trustworthy.
+```{r}
+model_deaths_final = lm(new_deaths ~ (population + human_development_index)^2, data=covid_agg)
+summary(model_deaths_final)
+```
+
+
 
 
 
