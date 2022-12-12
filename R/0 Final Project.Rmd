@@ -604,7 +604,7 @@ This model gives us an adjusted R-squared value of 0.9594. Which means out model
 
 The second guiding question for this project is:  
 
-Among countries with reliably reported data relating to cases, positive test rates, vaccinations, and boosters, what societal and governmental responses to the COVID-19 pandemic are most strongly related to the prevalence and severity of COVID-19 experienced in a country between February 2020 and October 2022 (as measured by average daily COVID-19 cases and deaths)?
+Among countries with reliably reported data relating to cases, positive test rates, vaccinations, and other daily-reported COVID-19 data, which of these variables are most strongly related to the prevalence and severity of COVID-19 experienced in a country between February 2020 and October 2022 (as measured by average daily COVID-19 cases and deaths)?
 
     a) What is the best model that can be built from these daily-reported data for predicting the daily new COVID-19 cases in a country?  
     
@@ -613,10 +613,10 @@ Among countries with reliably reported data relating to cases, positive test rat
 
 To answer this guiding question, we will use the tools we learned in DATA 603 to develop two multiple linear regression models: one for New Cases (i.e., daily COVID-19 cases reported in a country) and one for New Deaths (i.e., daily deaths due to COVID-19 reported in a country). For either model, the independent/predictor variables which we consider for inclusion in the model are:  
     - reproduction_rate: an estimate of the effective reproduction rate of the COVID-19 virus.  
-    - new_tests_smoothed: Daily COVID-19 tests conducted, averaged over 7 days.  
+    - new_tests_smoothed: daily COVID-19 tests conducted, averaged over 7 days.  
     - positive_rate: the proportion of positive COVID-19 tests compared to the number of tests conducted, averaged over 7 days.  
-    - new_vaccinations_smoothed: Daily COVID-19 vaccinations administered, averaged over 7 days.  
-    - new_people_vaccinated_smoothed: Daily number of people receiving their first COVID-19 vaccination, averaged over 7 days.  
+    - new_vaccinations_smoothed: daily COVID-19 vaccinations administered, averaged over 7 days.  
+    - new_people_vaccinated_smoothed: daily number of people receiving their first COVID-19 vaccination, averaged over 7 days.  
     - stringency_index: a composite measure of 9 different indicators of pandemic-related government regulations (e.g., masking mandates, school closures, etc.).  
     - hosp_patients: number of patients in hospitals due to COVID-19 on a given day.  
     - icu_patients: number of patients in intensive care units due to COVID-19 on a given day.  
@@ -658,15 +658,15 @@ summary(gq2_cases_reduced1)
 summary(gq2_cases_reduced2)
 ```
 
-Evidently, the RMSE and $R^2_{adj}$ values for the two models above indicate that the model including hosp_patients better fits the data than the model including icu_patients. I will check the VIF values for the model including hosp_patients below to determine whether this model can be used for further model construction.  
+Evidently, the RMSE and $R^2_{adj}$ values for the two models above indicate that the model including hosp_patients better fits the data than the model including icu_patients. We checked the VIF values for the model including hosp_patients below to determine whether this model could be used for further model construction.  
 
 ```{r}
 vif(gq2_cases_reduced1)
 ```
 
-Because VIF < 10.0 for all independent variables above, gq2_cases_reduced1 (the model including hosp_patients) will be used for further model construction.  
+Because VIF < 10.0 for all independent variables above, gq2_cases_reduced1 (the model including hosp_patients) was used for further model construction.  
 
-To determine the main effects which should be included in this model, I will conduct individual coefficients t-tests for each predictor with the following hypotheses (at the $\alpha = 0.05$ significance level):  
+To determine the main effects which should be included in this model, we conducted individual coefficients t-tests for each predictor with the following hypotheses (at the $\alpha = 0.05$ significance level):  
 
   $H_0: \beta_i = 0$  
   $H_a: \beta_i \neq 0$  
@@ -677,7 +677,7 @@ To determine the main effects which should be included in this model, I will con
 summary(gq2_cases_reduced1)
 ```
 
-P-value < $\alpha$ for all independent variables; therefore, we reject the null hypothesis for each variable, inferring that the coefficient for each variable is not equal to zero at the 5% level of significance. In other words, we infer that each of the independent/predictor variables included above contribute to the daily cases observed in the countries included in the data set.  
+P-value < $\alpha$ for all independent variables; therefore, we rejected the null hypothesis for each variable, inferring that the coefficient for each variable was not equal to zero at the 5% level of significance. In other words, we inferred that each of the independent/predictor variables included above contribute to the daily cases observed in the countries included in the data set.  
 
 
 To determine whether any interaction terms should be included in the model, we created a full interaction model and then conducted individual coefficients t-tests with each new interaction term, using the same hypotheses as above (and at a significance level of $\alpha = 0.05$) 
@@ -689,7 +689,8 @@ gq2_cases_intermod1 = lm(new_cases_smoothed ~ (reproduction_rate + new_tests_smo
 
 summary(gq2_cases_intermod1)
 ```
-P-value > $\alpha$ for the interaction terms positive_rate:stringency_index and reproduction_rate:positive_rate; therefore, we fail to reject the null hypothesis for these terms and infer that their coefficients are not different from 0, at a 5% significance level. For all other interaction terms, p-value < $\alpha$. Therefore, all other interaction terms will be included in the model going forward.  
+
+P-value > $\alpha$ for the interaction terms positive_rate:stringency_index and reproduction_rate:positive_rate; therefore, we fail to reject the null hypothesis for these terms and infer that their coefficients are not different from 0, at a 5% significance level. For all other interaction terms, p-value < $\alpha$. Therefore, all other interaction terms were included in the model going forward.  
 
 ```{r}
 gq2_cases_intermod_reduced = lm(new_cases_smoothed ~ reproduction_rate + new_tests_smoothed + 
@@ -713,32 +714,149 @@ summary(gq2_cases_intermod_reduced)
 
 At this stage, the model has an RMSE of 3582 (far lower than the RMSE of 20560 when only main effects were included) and an $R^2_{adj}$ of 0.9918 (far higher than the additive model's $R^2_{adj}$ of 0.7301).  
 
-Next, we attempted to check whether any higher-order terms were warranted in the model by checking pairwise plots of the dependent variable with each of the independent variables and determining whether any of the relationships were curvilinear in nature. However, the following R-code caused out R studio applications to crash every time that it was run.  
-
-```{r}
-# THIS (graph) CAUSES R TO CRASH
-#covid_data_pairs <-data.frame(covid_data$new_cases_smoothed, covid_data$reproduction_rate, covid_data$new_tests_smoothed, covid_data$positive_rate, covid_data$new_vaccinations_smoothed, covid_data$new_people_vaccinated_smoothed, covid_data$stringency_index, covid_data$hosp_patients)
-
-#ggpairs(covid_data_pairs, lower = list(continuous="smooth_loess", combo="facethist", discrete="facetbar", na="na"))
-```
-
-Because the above code would not run and because the $R^2_{adj}$ in the interactive model is already a remarkably high 0.9918, we determined that adding additional high-order terms would be unnecessary. Therefore, the final model for new cases (i.e., daily cases) that we fitted from countries' daily-reported COVID-19-related data is the following: 
+At this point, we determined that adding higher-order terms to the model would be both unnecessary and ill-advised. This is because the $R^2_{adj}$ for this model is already 0.9918, meaning that the model is able to explain roughly 99.18% of the variance in the data, while accounting for the number of variables included in the model. This is a remarkably high amount of variance being explained, and the number of variables in the model is already very high. Therefore, in order to avoid over-fitting the model any further, and because no additional term would be able to significantly improve the fit of the data (at least in terms of $R^2_{adj}$), we decided that the final model for daily/new cases that we fitted from countries' daily-reported COVID-19-related data is the following:  
 
 $\widehat{New Cases} = -956.9219 - 177.4731 X_{reproduction.rate} + 0.0103 X_{new.tests.smoothed} - 782.4864 X_{positive.rate} + 0.0443 X_{new.vaccinations.smoothed} - 0.1002 X_{new.people.vaccinated.smoothed} - 35.6258 X_{stringency.index} + 1.2017 X_{hosp.patients} - 0.0028 X_{reproduction.rate:new.tests.smoothed} - 0.0114 X_{reproduction.rate:new.vaccinations.smoothed} + 0.0505 X_{reproduction.rate:new.people.vaccinated.smoothed} + 58.5161 X_{reproduction.rate:stringency.index} - 1.4194 X_{reproduction.rate:hosp.patients} + 0.9823 X_{new.tests.smoothed:positive.rate} - 0.00000001809 X_{new.tests.smoothed:new.vaccinations.smoothed} + 0.000000008441 X_{new.tests.smoothed:new.people.vaccinated.smoothed} - 0.0001008 X_{new.tests.smoothed:stringency.index} + 0.0000001965 X_{new.tests.smoothed:hosp.patients} - 0.05656 X_{positive.rate:new.vaccinations.smoothed} - 0.03826 X_{positive.rate:new.people.vaccinated.smoothed} + 2.0004 X_{positive.rate:hosp.patients} + 0.000000005571 X_{new.vaccinations.smoothed:new.people.vaccinated.smoothed} - 0.0004916 X_{new.vaccinations.smoothed:stringency.index} + 0.0000005381 X_{new.vaccinations.smoothed:hosp.patients} + 0.0009311 X_{new.people.vaccinated.smoothed:stringency.index} - 0.0000007765 X_{new.people.vaccinated.smoothed:hosp.patients} - 0.002075 X_{stringency.index:hosp.patients}$
 
 
 ### New Cases Model Assumptions 
 
+#### Normality Assumption 
+
+To test the normality assumption in the model, we used the Shapiro-Wilk test:
+
+**Null hypothesis:** the sample data are significantly normally distributed.  
+
+**Alternative hypothesis:** the sample data are not significantly normally distributed.  
+
+We will test these hypotheses with a significance level of $\alpha = 0.05$.  
+
+In order to be able to run this test, we had to take a random sample of 5000 residuals from the model, as the full sample size is too large to be run by the shapiro.test() function.  
+
+```{r}
+# Setting seed so that the random numbers produced by the sample_n function are always the same
+set.seed(12345)
+
+# Creating a dataframe of the residuals of the model 
+residuals_df = data.frame(gq2_cases_intermod_reduced$residuals)
+
+# Sampling 5000 observations of the residuals
+random_sample_residuals <- sample_n(residuals_df, 5000)
+
+# Conducting the Shapiro-Wilk test with the residuals that were randomly selected
+shapiro.test(random_sample_residuals$gq2_cases_intermod_reduced.residuals)
+```
+
+Plotting a Q-Q plot:
+
+```{r}
+ggplot(gq2_cases_intermod_reduced, aes(sample=gq2_cases_intermod_reduced$residuals)) +
+stat_qq() +
+stat_qq_line()
+```
+
+From the output of our test, we get a p-value of 0.00000000000000022 which is less than 0.05. P-value < $\alpha$; therefore, we can reject the null hypothesis that our sample data is significantly normally distributed and conclude with a significance level of 0.05 that our sample data is not normally distributed. This means that there is a problem with the normality assumption. This result is reflected in the Q-Q plot as well, in which one can observe that the residuals deviate increasingly far from the diagonal line of normality as values fall further from 0.  
+
+#### Homoscedasticity Assumption 
+
+Testing for heteroscedasticity, we conducted a Breusch-Pagan test:
+
+**Null hypothesis:** heteroscedasticity is not present ($H_0: \sigma^2_1 = \sigma^2_2 =... = \sigma^2_n$)  
+
+**Alternative hypothesis:** heteroscedasticity is present ($H_a:$ at least one $\sigma^2_i$ is different from the others) 
+
+We once again used a significance level, alpha, of $\alpha = 0.05$.
+
+```{r}
+bptest(gq2_cases_intermod_reduced)
+```
+
+From the output of our test, we get a p-value of 0.00000000000000022, which is less than 0.05. P-value < $\alpha$; thus, we can reject the null hypothesis that there is homoscedasticity and conclude with a significance level of 0.05 that our model is not homoscedastic (i.e., we can infer that heteroscedasticity is present). This means that there is a problem with the homoscedasticity assumption. 
+
+#### Linearity Assumption 
+
+Next, we tested for linearity using a residuals vs predicted $\hat{Y}$ plot:
+```{r}
+ggplot(gq2_cases_intermod_reduced, aes(x=.fitted, y=.resid)) +
+geom_point() + geom_smooth()+
+geom_hline(yintercept = 0)
+```
+
+In the plot above, it appears that there may be a funneling pattern between the residuals and fitted values, with residuals being more widely dispersed at higher fitted values than at lower fitted values. However, it is inconclusive whether this pattern is severe enough to warrant stating that the data is non-linear.  
 
 
+#### Outliers Assumption
+
+We checked for outliers in the model by using Cook's Distance, as visualized in a plot of Residuals vs. Leverage. We determined that any data points with a Cook's Distance greater than 1 should be removed from the model.  
+
+```{r}
+plot(gq2_cases_intermod_reduced, which=5)
+```
+
+From the model above, no data points have a Cook's Distance greater than 1, and only one point has a Cook's Distance greater than 0.5. Therefore, no data points will be removed from the data set for reason of being an outlier.  
 
 
+#### Independant Errors Assumption 
+
+Plotting residuals vs. fitted values to see if the error terms look independent from each other:
+```{r}
+ggplot(gq2_cases_intermod_reduced, aes(x=.fitted, y=.resid)) +
+geom_point() + geom_smooth()+
+geom_hline(yintercept = 0)
+```
+
+Finally, in the plot above, it appears that the residuals are relatively evenly distributed, meaning that the residuals are independent from each other. There is, once again, a potential funnel-shape to the data points, but this is inconclusive based on the available information.  
+
+
+Now, since the daily new cases model failed most of the model assumptions, we attempted a Box-Cox transformation to see if this could improve the assumption-test outcomes.  
+
+First, we confirmed that our response variable is always positive.  
+
+```{r}
+count(!is.na(covid_data$new_cases_smoothed[covid_data$new_cases_smoothed < 0]))
+```
+
+We get no rows where new cases is less than 0, so we can continue with the Box-Cox transformation.
+
+```{r}
+bc=boxcox(gq2_cases_intermod_reduced,lambda=seq(-1,1))
+bestlambda=bc$x[which(bc$y==max(bc$y))]
+bestlambda
+```
+
+The best lambda value is 0.3939394; this is the lambda value we used to conduct the following Box-Cox transformation:  
+
+```{r}
+bc_gq2_cases_intermod_reduced = lm((((new_cases_smoothed^(-0.3939394))-1)/-0.3939394)~ reproduction_rate +
+                      new_tests_smoothed + 
+                      positive_rate + new_vaccinations_smoothed + new_people_vaccinated_smoothed +
+                      stringency_index + hosp_patients + reproduction_rate:new_tests_smoothed + 
+                      reproduction_rate:new_vaccinations_smoothed + 
+                      reproduction_rate:new_people_vaccinated_smoothed + 
+                      reproduction_rate:stringency_index + reproduction_rate:hosp_patients + 
+                      new_tests_smoothed:positive_rate + new_tests_smoothed:new_vaccinations_smoothed + 
+                      new_tests_smoothed:new_people_vaccinated_smoothed + new_tests_smoothed:stringency_index +
+                      new_tests_smoothed:hosp_patients + positive_rate:new_vaccinations_smoothed + 
+                      positive_rate:new_people_vaccinated_smoothed + positive_rate:hosp_patients + 
+                      new_vaccinations_smoothed:new_people_vaccinated_smoothed + 
+                      new_vaccinations_smoothed:stringency_index + new_vaccinations_smoothed:hosp_patients + 
+                      new_people_vaccinated_smoothed:stringency_index + 
+                      new_people_vaccinated_smoothed:hosp_patients + stringency_index:hosp_patients
+                      , data = covid_data)
+
+summary(bc_gq2_cases_intermod_reduced)
+```
+
+After conducting a Box-Cox transformation, our model has an $R^2_adj$ of 0.3264, which is far lower than the previous $R^2_adj$ of 0.9918. For this reason, we decided to declare the previously constructed model as the final model for daily new cases, despite its violation of the assumptions of homoscedasticity and normality (and potential failure to satisfy the assumptions of independence of errors and of linearity). It is important to note, therefore, that the results of the model are not necessarily trustworthy.  
+
+The final model for daily new cases observed in a country, based on various daily-reported COVID-19-related data is:  
+$\widehat{New Cases} = -956.9219 - 177.4731 X_{reproduction.rate} + 0.0103 X_{new.tests.smoothed} - 782.4864 X_{positive.rate} + 0.0443 X_{new.vaccinations.smoothed} - 0.1002 X_{new.people.vaccinated.smoothed} - 35.6258 X_{stringency.index} + 1.2017 X_{hosp.patients} - 0.0028 X_{reproduction.rate:new.tests.smoothed} - 0.0114 X_{reproduction.rate:new.vaccinations.smoothed} + 0.0505 X_{reproduction.rate:new.people.vaccinated.smoothed} + 58.5161 X_{reproduction.rate:stringency.index} - 1.4194 X_{reproduction.rate:hosp.patients} + 0.9823 X_{new.tests.smoothed:positive.rate} - 0.00000001809 X_{new.tests.smoothed:new.vaccinations.smoothed} + 0.000000008441 X_{new.tests.smoothed:new.people.vaccinated.smoothed} - 0.0001008 X_{new.tests.smoothed:stringency.index} + 0.0000001965 X_{new.tests.smoothed:hosp.patients} - 0.05656 X_{positive.rate:new.vaccinations.smoothed} - 0.03826 X_{positive.rate:new.people.vaccinated.smoothed} + 2.0004 X_{positive.rate:hosp.patients} + 0.000000005571 X_{new.vaccinations.smoothed:new.people.vaccinated.smoothed} - 0.0004916 X_{new.vaccinations.smoothed:stringency.index} + 0.0000005381 X_{new.vaccinations.smoothed:hosp.patients} + 0.0009311 X_{new.people.vaccinated.smoothed:stringency.index} - 0.0000007765 X_{new.people.vaccinated.smoothed:hosp.patients} - 0.002075 X_{stringency.index:hosp.patients}$  
 
 
 
 ### New Deaths Model Creation
 
-We again started creation of this model by first defining the full model, including all the daily reported variables related to COVID-19 which could be used to predict New COVID-19 Deaths for a country. We used the lm() function to build the model and the summary() function to display a summary of the most important information from the model.  
+We again started creation of this model by first defining the full model, including all the daily reported variables related to COVID-19 which could be used to predict daily new COVID-19 deaths for a country. We used the lm() function to build the model and the summary() function to display a summary of the most important information from the model.  
 
 ```{r}
 gq2_deaths_full = lm(new_deaths_smoothed ~ reproduction_rate + new_tests_smoothed + 
@@ -770,15 +888,15 @@ summary(gq2_deaths_reduced1)
 summary(gq2_deaths_reduced2)
 ```
 
-While the $R^2_adj$ was higher in the model including icu_patients than in the model including hosp_patients, the RMSE was lower in the latter model than in the former. Therefore, it is unclear which variable provides a better fit to the data. Since the hosp_patients variable had a higher VIF than icu_patients, I will continue with the model including icu_patients as I complete further model construction.  
+While the $R^2_adj$ was higher in the model including icu_patients than in the model including hosp_patients, the RMSE was lower in the latter model than in the former. Therefore, it is unclear which variable provides a better fit to the data. Since the hosp_patients variable had a higher VIF than icu_patients, we decided to continue with the model including icu_patients to complete further model construction.  
 
 ```{r}
 vif(gq2_deaths_reduced2)
 ```
 
-Because VIF < 10.0 for all independent variables above, gq2_deaths_reduced2 (the model including icu_patients) will be used for further model construction.  
+Because VIF < 10.0 for all independent variables above, gq2_deaths_reduced2 (the model including icu_patients) was used for further model construction.  
 
-To determine the main effects which should be included in this model, I will conduct individual coefficients t-tests for each predictor with the following hypotheses (at the $\alpha = 0.05$ significance level):  
+To determine the main effects which should be included in this model, we conducted individual coefficients t-tests for each predictor with the following hypotheses (at the $\alpha = 0.05$ significance level):  
 
   $H_0: \beta_i = 0$  
   $H_a: \beta_i \neq 0$  
@@ -800,7 +918,7 @@ gq2_deaths_intermod1 = lm(new_deaths_smoothed ~ (reproduction_rate + new_tests_s
 
 summary(gq2_deaths_intermod1)
 ```
-P-value > $\alpha$ for the interaction terms positive_rate:new_vaccinations_smoothed and reproduction_rate:positive_rate; therefore, we fail to reject the null hypothesis for these terms and infer that their coefficients are not different from 0, at a 5% significance level. For all other interaction terms, p-value < $\alpha$. Thus, all other interaction terms will be included in the model going forward.  
+P-value > $\alpha$ for the interaction terms positive_rate:new_vaccinations_smoothed and reproduction_rate:positive_rate; therefore, we fail to reject the null hypothesis for these terms and infer that their coefficients are not different from 0, at a 5% significance level. For all other interaction terms, p-value < $\alpha$. Thus, all other interaction terms were included in the model going forward.  
 
 ```{r}
 gq2_deaths_intermod_reduced = lm(new_deaths_smoothed ~ reproduction_rate + new_tests_smoothed + 
@@ -827,22 +945,178 @@ Finally, p-value < $\alpha$ for all interaction terms; therefore, we reject the 
 
 At this stage, the model has an RMSE of 85.25 (far lower than the RMSE of 115.1 when only main effects were included) and an $R^2_{adj}$ of 0.9197 (far higher than the additive model's $R^2_{adj}$ of 0.8537).  
 
-Next, we attempted to check whether any higher-order terms were warranted in the model by checking pairwise plots of the dependent variable with each of the independent variables and determining whether any of the relationships were curvilinear in nature. However, the following R-code caused our R studio applications to crash every time that it was run.  
+Next, we attempted to check whether any higher-order terms were warranted in the model by checking pairwise plots of the dependent variable with each of the independent variables and determining whether any of the relationships were curvilinear in nature.  
+```{r}
+pairs(~ new_deaths_smoothed + reproduction_rate + new_tests_smoothed + 
+                      positive_rate + new_vaccinations_smoothed + new_people_vaccinated_smoothed +
+                      stringency_index + icu_patients, data=covid_data)
+```
+The independent variables which appear to have the most obviously curvilinear relationships with 'new_deaths_smoothed' are 'reproduction_rate' and 'positive_rate'. Thus, we attempted adding a higher-order term for either variable to determine whether it results in a better-fitting model to the data. However, it is important to note that the model already included many parameters. In order to avoid over-fitting, we determined that we would only add higher-order terms if they contributed significantly to the proportion of variance in the data explained by the model or greatly reduced the model's RMSE.  
 
 ```{r}
-# THIS (graph) CAUSES R TO CRASH
-#covid_data_pairs <-data.frame(covid_data$new_cases_smoothed, covid_data$reproduction_rate, covid_data$new_tests_smoothed, covid_data$positive_rate, covid_data$new_vaccinations_smoothed, covid_data$new_people_vaccinated_smoothed, covid_data$stringency_index, covid_data$hosp_patients)
+# Adding second-order term for positive_rate
+gq2_deaths_intermod_reduced_pr2 = lm(new_deaths_smoothed ~ reproduction_rate + new_tests_smoothed + 
+                      positive_rate + I(positive_rate^2) + new_vaccinations_smoothed + 
+                      new_people_vaccinated_smoothed + stringency_index + icu_patients + 
+                      reproduction_rate:new_tests_smoothed +  reproduction_rate:new_vaccinations_smoothed + 
+                      reproduction_rate:new_people_vaccinated_smoothed + 
+                      reproduction_rate:stringency_index + reproduction_rate:icu_patients + 
+                      new_tests_smoothed:positive_rate + new_tests_smoothed:new_vaccinations_smoothed + 
+                      new_tests_smoothed:new_people_vaccinated_smoothed + new_tests_smoothed:stringency_index +
+                      new_tests_smoothed:icu_patients + 
+                      positive_rate:new_people_vaccinated_smoothed + positive_rate:stringency_index + 
+                      positive_rate:icu_patients + 
+                      new_vaccinations_smoothed:new_people_vaccinated_smoothed + 
+                      new_vaccinations_smoothed:stringency_index + new_vaccinations_smoothed:icu_patients + 
+                      new_people_vaccinated_smoothed:stringency_index + 
+                      new_people_vaccinated_smoothed:icu_patients + stringency_index:icu_patients
+                      , data = covid_data)
 
-#ggpairs(covid_data_pairs, lower = list(continuous="smooth_loess", combo="facethist", discrete="facetbar", na="na"))
+summary(gq2_deaths_intermod_reduced_pr2)
 ```
+The results indicate that the addition of a $X_{positive.rate}^2$ term increased the $R^2_{adj}$ by only 0.0002 from the previous first-order interaction model, and decreased the RMSE by only 0.05. Therefore, the model which includes the higher-order term fits the data only marginally better, and not significantly enough to warrant inclusion in the final model.  
 
-Because the above code would not run and because the $R^2_{adj}$ in the interactive model is already a remarkably high 0.9197, we determined that adding additional high-order terms would be unnecessary. Therefore, the final model for new deaths (i.e., daily deaths) that we fitted from countries' daily-reported COVID-19-related data is the following: 
+
+```{r}
+# Adding a second-order term for reproduction_rate 
+gq2_deaths_intermod_reduced_rr2 = lm(new_deaths_smoothed ~ reproduction_rate + I(reproduction_rate^2) +
+                      new_tests_smoothed + positive_rate + new_vaccinations_smoothed +
+                      new_people_vaccinated_smoothed + stringency_index + icu_patients + 
+                      reproduction_rate:new_tests_smoothed + 
+                      reproduction_rate:new_vaccinations_smoothed + 
+                      reproduction_rate:new_people_vaccinated_smoothed + 
+                      reproduction_rate:stringency_index + reproduction_rate:icu_patients + 
+                      new_tests_smoothed:positive_rate + new_tests_smoothed:new_vaccinations_smoothed + 
+                      new_tests_smoothed:new_people_vaccinated_smoothed + new_tests_smoothed:stringency_index +
+                      new_tests_smoothed:icu_patients + 
+                      positive_rate:new_people_vaccinated_smoothed + positive_rate:stringency_index + 
+                      positive_rate:icu_patients + 
+                      new_vaccinations_smoothed:new_people_vaccinated_smoothed + 
+                      new_vaccinations_smoothed:stringency_index + new_vaccinations_smoothed:icu_patients + 
+                      new_people_vaccinated_smoothed:stringency_index + 
+                      new_people_vaccinated_smoothed:icu_patients + stringency_index:icu_patients
+                      , data = covid_data)
+
+summary(gq2_deaths_intermod_reduced_rr2)
+```
+The results above indicate that the addition of a $X_{reproduction.rate}^2$ term increased the $R^2_{adj}$ by only 0.0002 from the previous first-order interaction model, and decreased the RMSE by only 0.09. Once again, the model which includes the higher-order term fits the data only marginally better than the previous model, and not significantly enough to warrant inclusion in the final model.  
+
+Therefore, we determined that the final model for daily new deaths (fitted from countries' daily-reported COVID-19-related data) is the following: 
 
 $\widehat{New Deaths} = 58.4964 - 35.3352 X_{reproduction.rate} + 0.0004054 X_{new.tests.smoothed} - 100.6623 X_{positive.rate} - 0.000004938 X_{new.vaccinations.smoothed} - 0.001109 X_{new.people.vaccinated.smoothed} - 0.8754 X_{stringency.index} + 0.1136 X_{icu.patients} - 0.0002561 X_{reproduction.rate:new.tests.smoothed} + 0.0005209 X_{reproduction.rate:new.vaccinations.smoothed} - 0.0006226 X_{reproduction.rate:new.people.vaccinated.smoothed} + 0.4797 X_{reproduction.rate:new.people.vaccinated.smoothed} - 0.09270 X_{reproduction.rate:icu.patients} + 0.0007177 X_{new.tests.smoothed:positive.rate} - 0.00000000006414 X_{new.tests.smoothed:new.vaccinations.smoothed} + 0.0000000008364 X_{new.tests.smoothed:new.people.vaccinated.smoothed} - 0.000001561 X_{new.tests.smoothed:stringency.index} + 0.000000008622 X_{new.tests.smoothed:icu.patients} + 0.003121 X_{positive.rate:new.people.vaccinated.smoothed} + 3.0156 X_{positive.rate:stringency.index} - 0.1275 X_{positive.rate:icu.patients} - 0.0000000001269 x_{new.vaccinations.smoothed:new.people.vaccinated.smoothed} - 0.00001073 X_{new.vaccinations.smoothed:stringency.index} + 0.00000001979 X_{new.vaccinations.smoothed:icu.patients} + 0.00002719 X_{new.people.vaccinated.smoothed:stringency.index} - 0.00000005890 X_{new.people.vaccinated.smoothed:icu.patients} + 0.0008637 X_{stringency.index:icu.patients}$  
 
 
 
 ### New Deaths Model Assumptions
+
+#### Normality Assumption 
+
+To test the normality assumption in the model, we used the Shapiro-Wilk test:
+
+**Null hypothesis:** the sample data are significantly normally distributed.  
+
+**Alternative hypothesis:** the sample data are not significantly normally distributed.  
+
+We tested these hypotheses with a significance level of $\alpha = 0.05$.  
+
+In order to be able to run this test, we had to take a random sample of 5000 residuals from the model, as the full sample size is too large to be run by the shapiro.test() function.  
+
+```{r}
+# Setting seed so that the random numbers produced by the sample_n function are always the same
+set.seed(12345)
+
+# Creating a dataframe of the residuals of the model 
+residuals_df = data.frame(gq2_deaths_intermod_reduced$residuals)
+
+# Sampling 5000 observations of the residuals
+random_sample_residuals <- sample_n(residuals_df, 5000)
+
+# Conducting the Shapiro-Wilk test with the residuals that were randomly selected
+shapiro.test(random_sample_residuals$gq2_deaths_intermod_reduced)
+```
+
+Plotting a Q-Q plot:
+
+```{r}
+ggplot(gq2_deaths_intermod_reduced, aes(sample=gq2_deaths_intermod_reduced$residuals)) +
+stat_qq() +
+stat_qq_line()
+```
+
+From the output of our test, we get a p-value of 0.00000000000000022 which is less than 0.05. P-value < $\alpha$; therefore, we can reject the null hypothesis that our sample data is significantly normally distributed and conclude with a significance level of 0.05 that our sample data is not normally distributed. This means that there is a problem with the normality assumption. This result is reflected in the Q-Q plot as well, in which one can observe that the residuals deviate increasingly far from the diagonal line of normality as values fall further from 0.  
+
+
+#### Homoscedasticity Assumption 
+
+Testing for heteroscedasticity, we conducted a Breusch-Pagan test:
+
+**Null hypothesis:** heteroscedasticity is not present ($H_0: \sigma^2_1 = \sigma^2_2 =... = \sigma^2_n$)  
+
+**Alternative hypothesis:** heteroscedasticity is present ($H_a:$ at least one $\sigma^2_i$ is different from the others) 
+
+We once again used a significance level, alpha, of $\alpha = 0.05$.
+
+```{r}
+bptest(gq2_deaths_intermod_reduced)
+```
+
+From the output of our test, we get a p-value of 0.00000000000000022, which is less than 0.05. P-value < $\alpha$; thus, we can reject the null hypothesis that there is homoscedasticity and conclude with a significance level of 0.05 that our model is not homoscedastic (i.e., we can infer that heteroscedasticity is present). This means that there is a problem with the homoscedasticity assumption. 
+
+#### Linearity Assumption 
+
+Next, we tested for linearity using a residuals vs predicted $\hat{Y}$ plot:
+```{r}
+ggplot(gq2_deaths_intermod_reduced, aes(x=.fitted, y=.resid)) +
+geom_point() + geom_smooth() +
+geom_hline(yintercept = 0)
+```
+
+In the plot above, there does not appear to be a discernible pattern between the fitted and residual values beyond fitted values of 0 (keeping in mind that fitted values below 0 are illogical, as the variable being predicted is the daily number of deaths occurring due to COVID-19, which cannot be negative). Therefore, the linearity assumption is satisfied.  
+
+
+#### Outliers Assumption
+
+We checked for outliers in the model by using Cook's Distance, as visualized in a plot of Residuals vs. Leverage. We determined that any data points with a Cook's Distance greater than 1 should be removed from the model.  
+
+```{r}
+plot(gq2_deaths_intermod_reduced,which=5)
+```
+
+From the model above, no data points have a Cook's Distance greater than even 0.5. Therefore, no data points will be removed from the data set for reason of being an outlier.  
+
+
+#### Independant Errors Assumption 
+
+Plotting residuals vs. fitted values to see if the error terms look independent from each other:
+```{r}
+ggplot(gq2_deaths_intermod_reduced, aes(x=.fitted, y=.resid)) +
+geom_point() + geom_smooth()+
+geom_hline(yintercept = 0)
+```
+
+Once again, the plot above does not exhibit any obvious pattern between residuals and fitted data. As such, the errors are independent of one another, allowing us to infer that the independence assumption is satisfied for this model.  
+
+
+Now, since the daily new deaths model failed both the normality and homoscedasticity assumptions, we attempted a Box-Cox transformation to see if this could improve the assumption-test outcomes.  
+
+First, we confirmed that our response variable is always positive.  
+
+```{r}
+count(!is.na(covid_data$new_deaths_smoothed[covid_data$new_deaths_smoothed < 0]))
+```
+
+We get no rows where new deaths is less than 0, so we can continue with the Box-Cox transformation.
+
+```{r}
+bc=boxcox(gq2_deaths_intermod_reduced,lambda=seq(-1,1))
+bestlambda=bc$x[which(bc$y==max(bc$y))]
+bestlambda
+```
+When attempting to conduct a Box Cox transformation, we received an error saying "response variable must be positive", despite having confirmed previously that the response variable is never less than 0 (see above). After researching this issue, we found that we could have used the Yeo-Johnson transformation; however, this is beyond the scope of this course, so we decided not to do it.  
+
+For this reason, we decided to declare the previously constructed model as the final model for daily new deaths, despite its violation of the assumptions of homoscedasticity and normality. It is important to note, therefore, that the results of the model are not necessarily trustworthy. The final model is:  
+
+$\widehat{New Deaths} = 58.4964 - 35.3352 X_{reproduction.rate} + 0.0004054 X_{new.tests.smoothed} - 100.6623 X_{positive.rate} - 0.000004938 X_{new.vaccinations.smoothed} - 0.001109 X_{new.people.vaccinated.smoothed} - 0.8754 X_{stringency.index} + 0.1136 X_{icu.patients} - 0.0002561 X_{reproduction.rate:new.tests.smoothed} + 0.0005209 X_{reproduction.rate:new.vaccinations.smoothed} - 0.0006226 X_{reproduction.rate:new.people.vaccinated.smoothed} + 0.4797 X_{reproduction.rate:new.people.vaccinated.smoothed} - 0.09270 X_{reproduction.rate:icu.patients} + 0.0007177 X_{new.tests.smoothed:positive.rate} - 0.00000000006414 X_{new.tests.smoothed:new.vaccinations.smoothed} + 0.0000000008364 X_{new.tests.smoothed:new.people.vaccinated.smoothed} - 0.000001561 X_{new.tests.smoothed:stringency.index} + 0.000000008622 X_{new.tests.smoothed:icu.patients} + 0.003121 X_{positive.rate:new.people.vaccinated.smoothed} + 3.0156 X_{positive.rate:stringency.index} - 0.1275 X_{positive.rate:icu.patients} - 0.0000000001269 x_{new.vaccinations.smoothed:new.people.vaccinated.smoothed} - 0.00001073 X_{new.vaccinations.smoothed:stringency.index} + 0.00000001979 X_{new.vaccinations.smoothed:icu.patients} + 0.00002719 X_{new.people.vaccinated.smoothed:stringency.index} - 0.00000005890 X_{new.people.vaccinated.smoothed:icu.patients} + 0.0008637 X_{stringency.index:icu.patients}$
 
 \newpage
 # Results
