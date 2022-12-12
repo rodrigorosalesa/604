@@ -401,7 +401,7 @@ Looking at the plot above, it seems that the residuals do not seem to be  evenly
 #### Multicolinearity
 The Multicollinearity assumption checks if two or more terms in our model provide redundant information about the independent variable. we will use the test Variance Inflation Factors (VIF). 
 ```{r}
-imcdiag(model_cases_interactions_2, method='VIF')
+imcdiag(model_cases_revised, method='VIF')
 ```
 A value in VIF between 1 and 5 suggest that there is a moderate multicollinearity, but it is not severe enough to warrant corrective measures. Concluding that our model passed this assumption.
 
@@ -572,6 +572,14 @@ From our output, there seems to be two data points, row 88 and 207 withCook´s D
 ```{r}
 covid_agg2 <- covid_agg[-c(88,207), ]
 ```
+
+
+#### Multicolinearity
+The Multicollinearity assumption checks if two or more terms in our model provide redundant information about the independent variable. we will use the test Variance Inflation Factors (VIF). 
+```{r}
+imcdiag(model_deaths_revised, method='VIF')
+```
+A value of VIF close to or below 1 means that there is no multicollinearity. Concluding that our model passed this assumption.
 
 
 #### Independant Errors Assumption 
