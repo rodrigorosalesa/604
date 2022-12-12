@@ -1127,6 +1127,9 @@ $\widehat{New Deaths} = 58.4964 - 35.3352 X_{reproduction.rate} + 0.0004054 X_{n
 \newpage
 # Results
 
+## Question 1
+
+## Question 2
 
 
 \newpage
