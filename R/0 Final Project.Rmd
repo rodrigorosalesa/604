@@ -460,13 +460,15 @@ As we shown, our Final Model did not pass the following assumptions: Homoscedast
 
 The final model to predict the average new daily Covid-19 cases for a specific country using is:\
 $\widehat{y}_{daily.cases} = - 317.9720 - 0.0000004255 x_{population} + 69.5871 x_{aged.65.older} - 0.0702 x_{gdp.per.capita} + 0.000000005053 x_{population} x_{gdp.per.capita} + 0.0100 x_{aged.65.older} x_{gdp.per.capita}$\
-Our model has an Adjusted R Squared of 0.6551.
+Our model has an Adjusted R Squared of 0.6551. Our RSME is 6208.4082.
 
 We decided to declare the previously constructed model as the final model for average daily cases for question 1, despite its violation of the assumptions. It is important to note, therefore, that the results of the model are not necessarily trustworthy.
 ```{r}
 model_cases_final = lm(new_cases ~ population + aged_65_older + gdp_per_capita + population:gdp_per_capita + aged_65_older:gdp_per_capita, data=covid_agg)
 
 summary(model_cases_final)
+
+print(paste0('RSME: ', sigma(model_cases_final)))
 ```
 
 
@@ -652,12 +654,13 @@ summary(model_deaths_final)
 
 Our final model for average new daily deaths due to Covid-19 is:\
 $\widehat{y}_{daily.deaths} = 0.8449 - 0.000004976 x_{population} + 10.9375 x_{human.development.index} + 0.000008337 x_{population} x_{human.development.index}$\
-More important our Adjusted R Squared is now 0.5141.
+More important our Adjusted R Squared is now 0.5141. Our RMSE = 87.5619.
 
 We decided to declare the previously constructed model as the final model for average daily deaths fo question 1, despite its violation of one assumption. It is important to note, therefore, that the results of the model are not necessarily trustworthy.
 ```{r}
 model_deaths_final = lm(new_deaths ~ (population + human_development_index)^2, data=covid_agg)
 summary(model_deaths_final)
+print(paste0('RSME: ', sigma(model_deaths_final)))
 ```
 
 
@@ -1317,7 +1320,7 @@ $i =$ any 2 pair interaction between population, population_density
 
 We rejected the null hypothesis for *population:human_development_index* so we include them in the model.\
 $\widehat{y}_{daily.deaths} = 0.8449 - 0.000004976 x_{population} + 10.9375 x_{human.development.index} + 0.000008337 x_{population} x_{human.development.index}$\
-Adjusted R Squared = 0.5141.
+Adjusted R Squared = 0.5141. RSME = 6,208.408.
 
 We tested high order terms with the highest correlation independent variable, population, using individual coefficient t test we failed to reject the null, meaning that the higher order term should not be included in our model.\
 $H_0: \beta_i = 0$\
@@ -1350,7 +1353,7 @@ Using VIF Method to test for Multicolinearity, we observed that it was not prese
 
 Our final model to predict average daily deaths of Covid-19 according to population-related metrics is:\
 $\widehat{y}_{daily.deaths} = 0.8449 - 0.000004976 x_{population} + 10.9375 x_{human.development.index} + 0.000008337 x_{population} x_{human.development.index}$\
-Adjusted R Squared = 0.5141.
+Adjusted R Squared = 0.5141. RMSE = 87.56186.
 
 Despite not passing the Normality we decided to use the mentioned model as our final model for prediction purposes, but we understand that results may not be trustworthy.
 
@@ -1373,6 +1376,7 @@ predict(model_deaths_final, df,interval="predict")
 ### Daily Cases Model
 
 In building a model for the daily COVID-19 cases observed in a country based on daily-reported COVID-19-related data in countries around the world (the Daily Cases Model), we considered the following variables as independent variables:  
+    
     - reproduction_rate;  
     - new_tests_smoothed;  
     - positive_rate;  
@@ -1383,6 +1387,7 @@ In building a model for the daily COVID-19 cases observed in a country based on 
     - icu_patients.  
 
 To check for multicollinearity, we determined the VIF for all of the considered variables, finding that both the hosp_patients and icu_patients variables had VIF > 10. When removing either variable independently, we found that keeping hosp_patients in the model and removing icu_patients allowed for the best-fit model with all remaining predictors having VIF < 10. Thus, we moved forward with the following variables in consideration of the best-fit first-order additive model:  
+   
     - reproduction_rate;  
     - new_tests_smoothed;  
     - positive_rate;  
