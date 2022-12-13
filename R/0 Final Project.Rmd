@@ -1268,9 +1268,12 @@ Using VIF Method to test for Multicolinearity, we observed that it was not prese
 
 Our final model to predict average daily cases of Covid-19 according to population-related metrics is:\
 $\widehat{y}_{new.daily.cases} = - 317.9720 - 0.0000004255 x_{population} + 69.5871 x_{aged.65.older} - 0.0702 x_{gdp.per.capita} + 0.000000005053 x_{population} x_{gdp.per.capita} + 0.0100 x_{aged.65.older} x_{gdp.per.capita}$\
-Adjusted R Squared = 0.6551.
+Adjusted R Squared = 0.6551. RSME = 6,208.4082.
 
 Despite not passing the Normality and Homoscedasticity we decided to use the mentioned model as our final model for prediction purposes, but we understand that results may not be trustworthy.
+
+
+#### Focal Variable Effects on Average Daily 
 
 
 #### Prediction
@@ -1320,7 +1323,7 @@ $i =$ any 2 pair interaction between population, population_density
 
 We rejected the null hypothesis for *population:human_development_index* so we include them in the model.\
 $\widehat{y}_{daily.deaths} = 0.8449 - 0.000004976 x_{population} + 10.9375 x_{human.development.index} + 0.000008337 x_{population} x_{human.development.index}$\
-Adjusted R Squared = 0.5141. RSME = 6,208.408.
+Adjusted R Squared = 0.5141. 
 
 We tested high order terms with the highest correlation independent variable, population, using individual coefficient t test we failed to reject the null, meaning that the higher order term should not be included in our model.\
 $H_0: \beta_i = 0$\
@@ -1353,7 +1356,7 @@ Using VIF Method to test for Multicolinearity, we observed that it was not prese
 
 Our final model to predict average daily deaths of Covid-19 according to population-related metrics is:\
 $\widehat{y}_{daily.deaths} = 0.8449 - 0.000004976 x_{population} + 10.9375 x_{human.development.index} + 0.000008337 x_{population} x_{human.development.index}$\
-Adjusted R Squared = 0.5141. RMSE = 87.56186.
+Adjusted R Squared = 0.5141. RMSE = 87.5619.
 
 Despite not passing the Normality we decided to use the mentioned model as our final model for prediction purposes, but we understand that results may not be trustworthy.
 
