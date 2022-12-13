@@ -1505,6 +1505,25 @@ The predicted number of new deaths in a single day (averaged over 7 days) observ
 \newpage
 # Discussion
 
+After performing the necessary statistical analyses for our linear models, the team has uncovered for Research Question 1 that the most important population-metrics for daily COVID deaths and cases include: population, elderly population, GDP per capita, and HDI. For Research Question 2, the team has concluded that vaccinations, government regulations, and COVID-19 tests are significant predictors of daily COVID deaths and cases.
+
+For Research Question 1, the modeling exercise when assessing the average new daily COVID-19 cases did not pass the homoscedasticity and normality assumptions, however did pass the multicollinearity, linearity, and independent error assumptions. The model yielded an Adjusted R-Squared value of 65.55%. With these facts coupled together, the model for Research Question 1 is not very accurate and trustworthy to draw conclusions from.
+
+When assessing the second part of Research Question 1, average daily deaths from COVID-19, the only assumption the model did not pass is the normality assumption, albeit passed homoscedasticity, multicollinearity, independent errors and linearity assumptions. The Adjusted R-Squared value yielded was 51.41%. As the model fails to pass the normality assumption and the Adjusted R-Squared value is low, the model is deemed as untrustworthy and therefore not completely reliable. 
+
+For Research Question 2, the team sought out to create the best model to predict daily COVID-19 cases and deaths in a country. For the daily new COVID-19 cases, the model failed the normality assumption, but passed the homoscedasticity, linearity, independent errors, and multicollinearity assumptions, yielding an Adjusted R-Squared value of 51.41%, which is not very impressive. For this reason, we deem this model as untrustworthy to use it for accurate predictions.
+
+Additionally, for the rest of Research Question 2, the factor assessed is the daily new COVID-19 deaths.  This model did not pass the homoscedasticity, normality assumptions, while the linearity and independent error assumption passes. This model had the highest Adjusted R-Squared value for any of the team’s models, at about 91.97%. However, as the Adjusted R-Squared is not the only thing used to deem a model’s success, the team concludes that this model is again untrustworthy to be used to predict data accurate to reality as it fails two of the assumptions.
+
+In order for more conclusive and trustworthy models to be built, there are a few things that can be done. First, in order to address the errors the team received when performing the Box Cox transformation method that states the response variable must be positive, the team could use the Yeo-Johnson transformation method to yield a response variable that would be positive. 
+
+Next, possible future datasets that could be used to better assess what factors were at play when it comes to quantifying the severity of the COVID-19 pandemic include:
+
+- Stock Index Data: Are countries with a higher performing stock index better equipped for dealing with a global pandemic? Does the performance of the stock market in a specific country indicate any correlations with how COVID-19 was handled in that country?
+- Education Metrics: Do countries that receive better education fare better when their government and healthcare systems respond to COVID-19 due to the population believing in scientific facts?
+
+Ultimately, through the creation of various multiple linear regression models to uncover data-driven answers to our 2 Research Questions, the team was able to yield results. Despite the models being unreliable to base conclusions that are robust and indisputable, the team has investigated the research questions to the best of their ability. It has been discovered that the population, elderly population, GDP per capita, and HDI are the most strongly related to the prevalence and severity of COVID-19. Moreover, the team has also concluded that all three predictors of vaccinations, government regulations, and COVID-19 testing are heavily related predictors of the severity and prevalence of COVID-19.  
+
 
 
 \newpage
