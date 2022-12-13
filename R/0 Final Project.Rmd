@@ -48,6 +48,49 @@ For this reason, the team will investigate questions which seek to quantify the 
     b) What is the best model that can be built from these daily-reported data for predicting the daily new COVID-19 deaths in a country?
 
 
+## Variable Definition
+
+**Dependent Variable** 
+
+- _new_cases_: new daily confirmed cases of COVID-19. Continuous Variable.
+- _new_cases_smoothed_: new daily confirmed cases of COVID-19, averaged over a 7-day window. Continuous Variable.
+- _new_deaths_: new daily deaths attributed to COVID-19. Continuous Variable.
+- _new_deaths_smoothed_: new daily deaths attributed to COVID-19, averaged over a 7-day window. Continuous Variable.
+
+
+**Independent Variables**
+
+1) Population metrics
+
+    - _extreme_poverty_: The number of the population per million that is considered to be in extreme poverty.
+    - _gdp_per_capita_: GDP per capita of the country.
+    - _median_age_: Median age of the population.
+    - _population_: Number of people in the country.
+    - _human_development_index_: Human development index as calculated by [Human Development Reports](https://hdr.undp.org/data-center/human-development-index#/indicies/HDI).
+    - _population_density_: Population density of the country.
+    - _aged_65_older_: The number of the population per million that is aged over 65 years old.
+    
+
+2) Health metrics
+
+    - _cardiovasc_death_rate_: The death rate caused by cardiovascular disease.
+    - _diabetes_prevalence_: The number of the population per million that is diagnosed with diabetes.
+    - _life_expectancy_: The life expectancy of the population of a country.
+    - _smokers_: The number of the population per million that smokes cigarettes.
+    
+
+3) COVID metrics
+
+    - _stringency_index_: A measure of how stringent the policies related to controlling the spread of COVID is.
+    - _reproduction_rate_: an estimate of the effective reproduction rate of the COVID-19 virus.  
+    - _new_tests_smoothed_: daily COVID-19 tests conducted, averaged over 7 days.  
+    - _positive_rate_: the proportion of positive COVID-19 tests compared to the number of tests conducted, averaged over 7 days.  
+    - _new_vaccinations_smoothed_: daily COVID-19 vaccinations administered, averaged over 7 days.  
+    - _new_people_vaccinated_smoothed_: daily number of people receiving their first COVID-19 vaccination, averaged over 7 days.  
+    - _hosp_patients_: number of patients in hospitals due to COVID-19 on a given day.  
+    - _icu_patients_: number of patients in intensive care units due to COVID-19 on a given day. 
+
+
 
 \newpage
 # Data Set Definition
@@ -62,40 +105,63 @@ Many countries and facilities are under reporting COVID-19 statistics like cases
 To answer the questions outlined in our introduction, we will be creating various multiple linear regression models. Our analysis will follow the below structure:
 
 **Preparation**
--Libraries Import
--Data Import
--Data Cleaning 
--Variable Definition 
--Data Preparation 
+
+    - Libraries Import
+    - Data Import
+    - Data Cleaning 
+    - Variable Definition 
+    - Data Preparation 
+
 
 **Analysis**
-- Question 1 Multiple Linear Regression Models
-  - New Cases Model
-    - New Cases Assumptions 
-    - New Cases Box-Cox Transformation
-    - Box-Cox Transformed Model Assumptions
-  - New Deaths Model
-    - New Deaths Assumptions
-    - New Deaths Box-Cox Transformation 
-- Question 2 Multiple Linear Regression Models
-  - Model 1
-    - Model 1 Assumptions 
-    - Model 1 Box-Cox Transformation
-  - Model 2
-    - Model 2 Assumptions
-    - Model 2 Box-Cox Transformation
+
+    - Question 1 Multiple Linear Regression Models 
+      - Average Daily Covid-19 Cases Model (Rodrigo Rosales Alvarez)
+        - Full Model Creation
+        - Main Effect Terms 
+        - Interaction Terms
+        - Higher Order Terms
+        - Model Assumptions
+        - Best Fitting Model
+      - Average Daily Covid-19 Deaths Model (Kane Smith)
+        - Full Model Creation
+        - Main Effect Terms 
+        - Interaction Terms
+        - Higher Order Terms
+        - Model Assumptions
+        - Best Fitting Model
+    - Question 2 Multiple Linear Regression Models 
+      - Daily Cases due to Covid-19 (Paul Croome)
+        - Full Model Creation
+        - Main Effect Terms 
+        - Interaction Terms
+        - Higher Order Terms
+        - Model Assumptions
+        - Best Fitting Model
+      - Daily Deaths due to Covid-19 (Ann Siddiqui)
+        - Full Model Creation
+        - Main Effect Terms 
+        - Interaction Terms
+        - Higher Order Terms
+        - Model Assumptions
+        - Best Fitting Model
+
 
 **Results** 
--Question 1
-  - New Cases Model
-  - New Deaths Model
--Question 2
-  - Daily Cases Model
-  - Daily Deaths Model
+
+    -Question 1
+      - Average Daily Covid-19 Cases Model
+      - Average Daily Covid-19 Deaths Model
+    -Question 2
+      - Daily Cases due to Covid-19
+      - Daily Deaths due to Covid-19
+
 
 **Discussion** 
--Question 1
--Question 2
+
+    - Question 1
+    - Question 2
+
 
 The above tasks were divided among the team in the following way: The preparation, including importing libraries, importing the data, cleaning the data, defining variables to be used in analysis, and wrangling the data, was all distributed evenly among the four team members. Analysis of Question 1 was divided between Rodrigo and Kane; this includes building the MLR models, checking the assumptions, doing any transformations and interpreting the results. Analysis of Question 2 was divided between Paul and Ann which also included building the MLR models, checking the assumptions, doing any transformations and interpreting the results.
 
@@ -176,41 +242,6 @@ covid[is.na(covid)] = 0
 ```
 
 
-## Variable Definition.
-
-**Independent Variable** 
-
-- _new_cases_: new daily confirmed cases of COVID-19. Continuous Variable.
-- _new_cases_smoothed_: new daily confirmed cases of COVID-19, averaged over a 7-day window. Continuous Variable.
-- _new_deaths_: new daily deaths attributed to COVID-19. Continuous Variable.
-- _new_deaths_smoothed_: new daily deaths attributed to COVID-19, averaged over a 7-day window. Continuous Variable.
-
-
-**Dependent Variables**
-
-1) Population metrics
-
-    - _extreme_poverty_: The number of the population per million that is considered to be in extreme poverty.
-    - _gdp_per_capita_: GDP per capita of the country.
-    - _median_age_: Median age of the population.
-    - _population_: Number of people in the country.
-    - _human_development_index_: Human development index as calculated by [Human Development Reports](https://hdr.undp.org/data-center/human-development-index#/indicies/HDI).
-    - _population_density_: Population density of the country.
-    - _aged_65_older_: The number of the population per million that is aged over 65 years old.
-    
-
-2) Health metrics
-
-    - _cardiovasc_death_rate_: The death rate caused by cardiovascular disease.
-    - _diabetes_prevalence_: The number of the population per million that is diagnosed with diabetes.
-    - _life_expectancy_: The life expectancy of the population of a country.
-    - _smokers_: The number of the population per million that smokes cigarettes.
-    
-
-3) COVID metrics
-
-    - _stringency_index_: A measure of how stringent the policies related to controlling the spread of COVID is.
-
 
 ## Data Preparation 
 To create the final dataset that will be used to create the *New Cases Model* and *New Deaths Model* we performed an aggregation function (mean) across the variable country as we are only interested in having one data point per country. The new data point will be the mean of every other variable present in the table; we decided to use the mean as that is the best way to aggregate the variables that we are interested on using like new cases, new deaths, population, stringency index and more.
@@ -233,10 +264,27 @@ Our research question number 1 is:
     
 For this reason we are going to build two Multiple Linear Regressions Models, one for New Cases and one for New Deaths, using the tools we learnt during class.
 
+The variables we are considering for the creation of the models mentioned above that relates to the population are:
+
+    - new_cases
+    - new_deaths
+    - extreme_poverty
+    - gdp_per_capita
+    - median_age
+    - population
+    - human_development_index
+    - population_density
+    - aged_65_older
+    - cardiovasc_death_rate
+    - diabetes_prevalence
+    - life_expectancy
+    - smokers
+    - stringency_index
+
 It is important to state that for all the statistical tests that we will perform throughout this project we will use a value of $\alpha = 0.05$.
 
 
-### New Cases Model
+### Average Daily Covid-19 Cases Model
 
 We started by defining our full model with the function **lm()**, including all the variables that make senses to predict New Covid-19 Cases for a specific country. Using the **summary()** function we are able to see the most important information about our model. 
 ```{r}
@@ -327,7 +375,7 @@ $\widehat{y}_{daily.cases} = - 317.9720 - 0.0000004255 x_{population} + 69.5871 
 Our model has an Adjusted R Squared of 0.6551.
 
 
-### New Cases Model Assumptions 
+### Average Daily Covid-19 Model Assumptions 
 
 #### Normality Assumption 
 
@@ -423,7 +471,7 @@ summary(model_cases_final)
 
 
 
-### New Deaths Model
+### Average Daily Covid-19 Deaths Model
 
 For the New Deaths model we followed the same procedure. We started by defining our full model, with **lm()**, including all the variables that make senses to predict New Covid-19 Deaths for a specific country. Using the **summary()** function we are able to see the most important information about our model.
 ```{r}
@@ -508,7 +556,7 @@ $\widehat{y}_{daily.deaths} = 0.8449 - 0.000004976 x_{population} + 10.9375 x_{h
 
 
 
-### Assumptions for New Deaths Model
+### Model Assumptions for Average Daily Covid-19 Deaths
 
 #### Normality Assumption 
 
@@ -1222,9 +1270,9 @@ Despite not passing the Normality and Homoscedasticity we decided to use the men
 
 
 #### Prediction
-The purpose of building a model is to have the ability to predict unknown scenarios, using the model we created we will predict the average daily covid-19 cases for a specific country that has the mean of all our predictor terms.
+The purpose of building a model is to have the ability to predict unknown scenarios, using the model we created we will predict the average daily covid-19 cases for a specific country that has the mean of all our predictor terms and also for one that has the median of all our predictor terms.
 ```{r}
-df = data.frame(population=mean(covid_agg$population), aged_65_older=mean(covid_agg$aged_65_older), gdp_per_capita=mean(covid_agg$gdp_per_capita))
+df = data.frame(population=c(mean(covid_agg$population), median(covid_agg$population)), aged_65_older=c(mean(covid_agg$aged_65_older), median(covid_agg$aged_65_older)), gdp_per_capita=c(mean(covid_agg$gdp_per_capita), median(covid_agg$gdp_per_capita)))
 predict(model_cases_final, df,interval="predict")
 ```
 
@@ -1306,12 +1354,17 @@ Adjusted R Squared = 0.5141.
 Despite not passing the Normality we decided to use the mentioned model as our final model for prediction purposes, but we understand that results may not be trustworthy.
 
 
+#### Focal Variable Effects on Average Daily 
+
+
 #### Prediction
-The purpose of building a model is to have the ability to predict unknown scenarios, using the model we created we will predict the average daily covid-19 deaths for a specific country that has the mean of all our predictor terms.
+The purpose of building a model is to have the ability to predict unknown scenarios, using the model we created we will predict the average daily covid-19 deaths for a specific country that has the mean of all our predictor terms and also for one that has the median of all our predictor terms.
 ```{r}
-df = data.frame(population=mean(covid_agg$population), human_development_index=mean(covid_agg$human_development_index))
+df = data.frame(population=c(mean(covid_agg$population), median(covid_agg$population)), human_development_index=c(mean(covid_agg$human_development_index), median(covid_agg$human_development_index)))
+
 predict(model_deaths_final, df,interval="predict")
 ```
+
 
 
 ## Results for Question 2
