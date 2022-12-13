@@ -154,16 +154,25 @@ To answer the questions outlined in our introduction, we created various multipl
 
     -Question 1  
       - Average Daily COVID-19 Cases Model  
+        - Focal Variable Effects on Average Daily Cases  
+        - Prediction of Average Daily Cases  
       - Average Daily COVID-19 Deaths Model  
+        - Focal Variable Effects on Average Daily Deaths  
+        - Prediction of Average Daily Deaths  
     -Question 2  
       - Daily COVID-19 Cases Model  
+        - Focal Variable Effects on Daily Cases  
+        - Prediction of Daily Cases  
       - Daily COVID-19 Deaths Model
+        - Focal Variable Effects on Daily Deaths  
+        - Prediction of Daily Deaths  
 
 
 **Discussion**   
 
     - Question 1  
     - Question 2  
+    - General Conclusions  
 
 
 The above tasks were divided among the team in the following way:  
