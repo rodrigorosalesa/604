@@ -1274,6 +1274,11 @@ Despite not passing the Normality and Homoscedasticity we decided to use the men
 
 
 #### Focal Variable Effects on Average Daily 
+The coefficient estimates for the focal variables in the final model above imply the following:
+
+- *population*: for every increase of 1.0 in the amount of people that live in a country, the number of average daily Covid-19 cases will increase by -317.9720 + (0.000000005053 * gdp_per_capita).\
+- *aged_65_older*: for every increase of 1% of the proportion of people over 65 years old in a country, the number of daily Covid-19 cases will increase by -248.3849 + (0.0100 * gdp_per_capita).\
+- *gdp_per_capita*: for every 1 dollar increased in the gross per capita of a country, the  number of daily Covid-19 cases will increase by -318.0422 + (0.000000005053 * population) + (0.0100 * aged_65_older).\
 
 
 #### Prediction
@@ -1361,7 +1366,11 @@ Adjusted R Squared = 0.5141. RMSE = 87.5619.
 Despite not passing the Normality we decided to use the mentioned model as our final model for prediction purposes, but we understand that results may not be trustworthy.
 
 
-#### Focal Variable Effects on Average Daily 
+#### Focal Variable Effects on Average Daily Deaths
+The coefficient estimates for the focal variables in the final model above imply the following:
+
+- *population*: for every increase of 1.0 in the amount of people that live in a country, the number of average daily deaths due to Covid-19 will increase by 0.8449 + (0.000008337 * human_development_increase).\
+- *human_development_index*: for every increase of 1% in the Human Development Index, the number of average daily deaths due to Covid-19 will increase by 0.954275 + (0.00000008337 * population).\
 
 
 #### Prediction
