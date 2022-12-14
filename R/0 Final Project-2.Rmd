@@ -332,9 +332,9 @@ model_cases_full = lm(new_cases ~ aged_65_older + smokers +
                         life_expectancy + population + stringency_index + 
                         human_development_index + population_density, 
                       data=covid_agg)
-
-summary(model_cases_full)
 ```
+
+For model summary, see: **Appendix, Output 1**
 
 Using the *Step Wise Regression Procedure* to create the best-fit additive model, we used a p-value for inclusion in the model of 0.1 and a p-value for removal from the model of 0.3. In addition, we conducted an individual coefficients t-test with the remaining variables identified by the stepwise regression procedure, using the following hypotheses:  
 
@@ -1768,4 +1768,13 @@ Our World in Data. (2022b). Data pipeline. Data pipeline - COVID-19 dataset by O
 United Nations. (2022). Human Development Index. United Nations Development Programme; United Nations. https://hdr.undp.org/data-center/human-development-index#/indicies/HDI  
 
 
+\newpage
+# Appendix - R Output
+
+#### Output 1
+```{r}
+summary(model_cases_full)
+```
+
+#### Output 2
 
